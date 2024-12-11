@@ -10,6 +10,17 @@ import { McurrencyService } from '../mcurrency.service';
 import { SettingsService } from 'app/settings/settings.service';
 import { Dates } from 'app/core/utils/dates';
 
+/** Currency Interface */
+interface Currency {
+  code: string;
+  id?: number;
+  name?: string;
+  decimalPlaces?: number;
+  displaySymbol?: string;
+  nameCode?: string;
+  displayLabel?: string;
+}
+
 @Component({
   selector: 'mifosx-entry',
   templateUrl: './entry.component.html',
@@ -23,13 +34,13 @@ export class EntryComponent implements OnInit, AfterViewInit {
   // Form and data properties
   entryForm: UntypedFormGroup;
   officeData: any[] = [];
-  currencyData: any[] = [];
+  currencyData: Currency[] = [];
   paymentTypeData: any[] = [];
   glAccountData: any[] = [];
 
   // Selected properties
   selectedOffice: any;
-  selectedCurrency: any;
+  selectedCurrency: Currency | null = null;
 
   // Error handling properties
   loadingData = true;
@@ -87,7 +98,11 @@ export class EntryComponent implements OnInit, AfterViewInit {
       tap(results => {
         // Process each data set
         this.officeData = results.offices || [];
-        this.currencyData = results.currencies.selectedCurrencyOptions || results.currencies || [];
+
+        // Type-safe filtering of currencies
+        const allCurrencies: Currency[] = results.currencies.selectedCurrencyOptions || results.currencies || [];
+        this.currencyData = allCurrencies.filter((currency: Currency) => currency.code === 'USD');
+
         this.paymentTypeData = results.paymentTypes || [];
         this.glAccountData = results.glAccounts || [];
 
@@ -96,8 +111,11 @@ export class EntryComponent implements OnInit, AfterViewInit {
           this.entryForm.get('officeId').setValue(this.officeData[0].id);
         }
 
+        // Set USD as the default currency
         if (this.currencyData.length > 0) {
-          this.entryForm.get('currencyCode').setValue(this.currencyData[0].code);
+          this.entryForm.get('currencyCode').setValue('USD');
+        } else {
+          console.warn('No USD currency found in the available currencies');
         }
       }),
       catchError(error => {
@@ -125,7 +143,7 @@ export class EntryComponent implements OnInit, AfterViewInit {
    * Update selected currency based on currency code
    */
   updateSelectedCurrency(currencyCode: string): void {
-    this.selectedCurrency = this.currencyData.find(currency => currency.code === currencyCode);
+    this.selectedCurrency = this.currencyData.find((currency: Currency) => currency.code === currencyCode) || null;
   }
 
   /**
@@ -134,7 +152,7 @@ export class EntryComponent implements OnInit, AfterViewInit {
   createEntryForm(): void {
     this.entryForm = this.formBuilder.group({
       'officeId': ['', Validators.required],
-      'currencyCode': ['', Validators.required],
+      'currencyCode': ['USD', Validators.required],
       'debits': this.formBuilder.array([this.createAffectedGLEntryForm()]),
       'credits': this.formBuilder.array([this.createAffectedGLEntryForm()]),
       'referenceNumber': [''],
@@ -194,31 +212,61 @@ export class EntryComponent implements OnInit, AfterViewInit {
    */
   submit(): void {
     if (this.entryForm.valid) {
+      // Format the transaction date
+      const formattedDate = this.dateUtils.formatDate(
+        this.entryForm.get('transactionDate').value,
+        'dd MMMM yyyy'
+      );
+
       // Prepare journal entry data
       const journalEntry = {
         ...this.entryForm.value,
         officeId: this.selectedOffice.id,
-        currencyCode: this.selectedCurrency.code
+        currencyCode: this.selectedCurrency?.code || 'USD',
+        transactionDate: formattedDate,
+        dateFormat: 'dd MMMM yyyy', // Add this explicitly
+        locale: 'en' // Add locale parameter
       };
 
       // Create journal entry
       this.mcurrencyService.createJournalEntry(journalEntry)
         .pipe(
           tap(response => {
-            // Perform success operations (e.g., reset form, show notification, or navigate)
             console.log('Journal entry successfully created', response);
+
+            // Reset form to initial state
             this.entryForm.reset();
-            // Optionally, navigate to another page
-            // this.router.navigate(['/desired-path']);
+
+            // Reset to default values
+            if (this.officeData.length > 0) {
+              this.entryForm.get('officeId').setValue(this.officeData[0].id);
+            }
+            this.entryForm.get('currencyCode').setValue('USD');
+
+            // Reset form arrays
+            this.entryForm.setControl('debits', this.formBuilder.array([this.createAffectedGLEntryForm()]));
+            this.entryForm.setControl('credits', this.formBuilder.array([this.createAffectedGLEntryForm()]));
           }),
           catchError(error => {
-            // Log the error and handle it (e.g., show a toast notification)
             console.error('Failed to create journal entry', error);
+
+            // Optionally mark form fields as touched to show validation errors
+            Object.keys(this.entryForm.controls).forEach(key => {
+              const control = this.entryForm.get(key);
+              control.markAsTouched();
+            });
+
             return throwError(error);
           })
         ).subscribe();
     } else {
       console.warn('Form is invalid');
+
+      // Mark all form controls as touched to show validation errors
+      Object.keys(this.entryForm.controls).forEach(key => {
+        const control = this.entryForm.get(key);
+        control.markAsTouched();
+      });
     }
   }
 
