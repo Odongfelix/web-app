@@ -9,11 +9,6 @@ import { throwError, forkJoin } from 'rxjs';
 import { McurrencyService } from '../mcurrency.service';
 import { SettingsService } from 'app/settings/settings.service';
 import { Dates } from 'app/core/utils/dates';
-import { PopoverService } from '../../configuration-wizard/popover/popover.service';
-import { ConfigurationWizardService } from '../../configuration-wizard/configuration-wizard.service';
-
-/** Custom Dialog Component */
-import { NextStepDialogComponent } from '../../configuration-wizard/next-step-dialog/next-step-dialog.component';
 
 @Component({
   selector: 'mifosx-entry',
@@ -51,9 +46,7 @@ export class EntryComponent implements OnInit, AfterViewInit {
     private dateUtils: Dates,
     private route: ActivatedRoute,
     private router: Router,
-    private dialog: MatDialog,
-    private configurationWizardService: ConfigurationWizardService,
-    private popoverService: PopoverService
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -112,10 +105,6 @@ export class EntryComponent implements OnInit, AfterViewInit {
         this.loadingData = false;
         this.dataLoadError = 'Failed to load required data. Please try again.';
         console.error('Data fetch comprehensive error:', error);
-
-        // Show error dialog
-        this.showErrorNotification(error);
-
         return throwError(error);
       }),
       finalize(() => {
@@ -137,18 +126,6 @@ export class EntryComponent implements OnInit, AfterViewInit {
    */
   updateSelectedCurrency(currencyCode: string): void {
     this.selectedCurrency = this.currencyData.find(currency => currency.code === currencyCode);
-  }
-
-  /**
-   * Show error notification
-   */
-  private showErrorNotification(error: any): void {
-    this.dialog.open(NextStepDialogComponent, {
-      data: {
-        title: 'Data Fetch Error',
-        message: error.message || 'Unable to load required data'
-      }
-    });
   }
 
   /**
@@ -228,47 +205,26 @@ export class EntryComponent implements OnInit, AfterViewInit {
       this.mcurrencyService.createJournalEntry(journalEntry)
         .pipe(
           tap(response => {
-            // Show success dialog or notification
-            this.dialog.open(NextStepDialogComponent, {
-              data: {
-                title: 'Journal Entry Created',
-                message: 'Journal entry has been successfully created.'
-              }
-            });
-            // Reset form or navigate
+            // Perform success operations (e.g., reset form, show notification, or navigate)
+            console.log('Journal entry successfully created', response);
             this.entryForm.reset();
+            // Optionally, navigate to another page
+            // this.router.navigate(['/desired-path']);
           }),
           catchError(error => {
-            // Show error dialog
-            this.dialog.open(NextStepDialogComponent, {
-              data: {
-                title: 'Journal Entry Error',
-                message: error.message || 'Failed to create journal entry'
-              }
-            });
+            // Log the error and handle it (e.g., show a toast notification)
+            console.error('Failed to create journal entry', error);
             return throwError(error);
           })
         ).subscribe();
     } else {
-      // Mark all fields as touched to show validation errors
-      this.markFormGroupTouched(this.entryForm);
+      console.warn('Form is invalid');
     }
   }
 
-  /**
-   * Recursively mark all controls in a form group as touched
-   */
-  markFormGroupTouched(formGroup: UntypedFormGroup) {
-    Object.values(formGroup.controls).forEach(control => {
-      control.markAsTouched();
-
-      if (control instanceof UntypedFormGroup) {
-        this.markFormGroupTouched(control);
-      }
-    });
-  }
-
   ngAfterViewInit(): void {
-    // Any post-view initialization logic
+    if (this.entryFormRef) {
+      this.entryFormRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 }

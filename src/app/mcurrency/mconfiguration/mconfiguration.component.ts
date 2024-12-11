@@ -1,17 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Observable, of, from } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-
-interface ExchangeRateResponse {
-  rates: {
-    UGX: number
-  };
-}
-
-interface SavedRateResponse {
-  rate: number;
-  lastUpdated: string;
-}
 
 @Component({
   selector: 'mifosx-mconfiguration',
@@ -28,61 +17,66 @@ export class MconfigurationComponent implements OnInit {
   // Metadata and state tracking
   lastUpdated: string | null = null;
   canSaveRate: boolean = true;
+  canSaveManualRate: boolean = true;
   isFetchingLiveRate: boolean = false;
   fetchError: string | null = null;
 
-  /**
-   * Saves the current live exchange rate
-   */
+  // Added ViewChild to get reference to manual rate input
+  @ViewChild('manualRateInput') manualRateInput!: ElementRef;
+
+  constructor() {}
+
+  ngOnInit(): void {
+    this.initializeComponent();
+  }
+
   saveLiveRate(): void {
-    // Check if there's a valid live rate to save
-    if (!this.liveRate) {
-      console.error('No live rate available to save');
-      return;
-    }
-
-    // Prepare payload for saving
-    const payload = {
-      rate: this.liveRate,
-      date: new Date().toISOString()
-    };
-
-    // Save to localStorage
-    localStorage.setItem('savedExchangeRate', JSON.stringify({
-      rate: this.liveRate,
-      lastUpdated: payload.date
-    }));
-
-    // Update component state
+    if (!this.liveRate) return;
+    const payload = { rate: this.liveRate, date: new Date().toISOString() };
+    localStorage.setItem('savedExchangeRate', JSON.stringify(payload));
     this.savedRate = this.liveRate;
     this.lastUpdated = payload.date;
     this.canSaveRate = false;
-
-    // Optional: Add any additional backend API call if required
-    // this.saveRateToBackend(payload);
+    this.canSaveManualRate = true; // Allow manual saving if live rate is saved
   }
 
-  /**
-   * Refreshes the live exchange rate
-   */
+  saveManualRate(): void {
+    if (!this.manualRate) return;
+    const payload = { rate: this.manualRate, date: new Date().toISOString() };
+    localStorage.setItem('savedExchangeRate', JSON.stringify(payload));
+    this.savedRate = this.manualRate;
+    this.lastUpdated = payload.date;
+    this.canSaveManualRate = false;
+    this.canSaveRate = true; // Allow live saving if manual rate is saved
+  }
+
+  updateManualRate(): void {
+    console.log('Manual rate updated:', this.manualRate);
+    // Update logic can be implemented here
+  }
+
   refreshLiveRate(): void {
-    // Reset any previous fetch error
+    this.isFetchingLiveRate = true;
     this.fetchError = null;
 
-    // Force fetch of new live rate, bypassing cache
-    this.isFetchingLiveRate = true;
+    // Clear the manual rate input if in manual rate mode
+    if (!this.useLiveRates && this.manualRateInput) {
+      this.manualRateInput.nativeElement.value = '';
+      this.manualRate = null;
+    }
 
-    // Clear existing cached rate to force fresh fetch
     localStorage.removeItem('exchangeRateCache');
-
-    // Call fetchLiveRate method to get new rate
     this.fetchLiveRate().subscribe({
       next: (rate) => {
         if (rate) {
           this.liveRate = rate;
           this.isFetchingLiveRate = false;
-          // Reset save rate capability if it's a new rate
           this.canSaveRate = true;
+
+          // Reset manual rate save ability when refreshing in live rate mode
+          if (this.useLiveRates) {
+            this.canSaveManualRate = true;
+          }
         }
       },
       error: (error) => {
@@ -92,25 +86,51 @@ export class MconfigurationComponent implements OnInit {
     });
   }
 
+  fetchLiveRate(): Observable<number | null> {
+    const cachedRate = localStorage.getItem('exchangeRateCache');
+    if (cachedRate) {
+      const parsed = JSON.parse(cachedRate);
+      if (Date.now() - parsed.timestamp < 3600000) {
+        this.liveRate = parsed.rate;
+        this.lastUpdated = new Date(parsed.timestamp).toISOString();
+        return of(this.liveRate);
+      }
+    }
 
-  // Configuration constants
-  private readonly CACHE_DURATION = 1 * 60 * 60 * 1000; // 1 hour cache
-  private readonly RATE_FETCH_TIMEOUT = 5000; // 5 seconds timeout
-
-  // API endpoints
-  private apiUrl = '/api/mcurrency';
-  private liveRateApiUrl = 'https://api.exchangerate-api.com/v4/latest/USD';
-
-  constructor() {}
-
-  ngOnInit(): void {
-    this.initializeComponent();
+    return from(
+      fetch('https://api.exchangerate-api.com/v4/latest/USD')
+        .then((response) => {
+          if (!response.ok) throw new Error('Network error');
+          return response.json();
+        })
+        .then((data) => {
+          if (data?.rates?.UGX) {
+            this.liveRate = data.rates.UGX;
+            localStorage.setItem('exchangeRateCache', JSON.stringify({ rate: this.liveRate, timestamp: Date.now() }));
+            this.lastUpdated = new Date().toISOString();
+            return this.liveRate;
+          }
+          throw new Error('Invalid data');
+        })
+    ).pipe(catchError((error) => of(null)));
   }
 
+  toggleRateMode(): void {
+    this.useLiveRates = !this.useLiveRates;
+    if (this.useLiveRates) {
+      this.manualRate = null;
+    } else {
+      this.liveRate = null;
+    }
+  }
 
-  /**
-   * Initialize component by fetching saved rates and live rates
-   */
+  validateNumberInput(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const sanitizedValue = inputElement.value.replace(/[^0-9.]/g, '');
+    const parts = sanitizedValue.split('.');
+    inputElement.value = parts.length > 2 ? `${parts[0]}.${parts[1]}` : sanitizedValue;
+  }
+
   private initializeComponent(): void {
     this.fetchSavedRate();
     if (this.useLiveRates) {
@@ -118,163 +138,17 @@ export class MconfigurationComponent implements OnInit {
     }
   }
 
-  /**
-   * Fetches the live exchange rate with comprehensive caching and error handling
-   */
-  fetchLiveRate(): Observable<number | null> {
-    // Check localStorage first for cached rate
-    const cachedRate = localStorage.getItem('exchangeRateCache');
-    if (cachedRate) {
-      const parsed = JSON.parse(cachedRate);
-      if (Date.now() - parsed.timestamp < this.CACHE_DURATION) {
-        this.liveRate = parsed.rate;
-        this.lastUpdated = new Date(parsed.timestamp).toISOString();
-        return of(this.liveRate);
-      }
-    }
-
-
-
-    this.isFetchingLiveRate = true;
-    this.fetchError = null;
-
-    return from(
-      fetch(this.liveRateApiUrl)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (data && data.rates && data.rates.UGX) {
-            this.liveRate = data.rates.UGX;
-
-            // Cache in localStorage
-            localStorage.setItem('exchangeRateCache', JSON.stringify({
-              rate: this.liveRate,
-              timestamp: Date.now()
-            }));
-
-            this.lastUpdated = new Date().toISOString();
-            this.isFetchingLiveRate = false;
-            return this.liveRate;
-          }
-          throw new Error('Invalid rate response');
-        })
-    ).pipe(
-      catchError(error => {
-        this.handleLiveRateFetchError(error);
-        return of(null);
-      })
-    );
-  }
-
-  /**
-   * Handles errors during live rate fetching with more granular error handling
-   */
-  private handleLiveRateFetchError(error: any): void {
-    // More detailed error messaging
-    if (error.name === 'AbortError') {
-      this.fetchError = 'Rate fetch timed out. Check your internet connection.';
-    } else if (!navigator.onLine) {
-      this.fetchError = 'No internet connection. Please check your network.';
-    } else {
-      this.fetchError = 'Unable to fetch live rate. Please try again later.';
-    }
-
-    this.isFetchingLiveRate = false;
-    console.error('Live rate fetch error:', error);
-  }
-
-  /**
-   * Fetches the saved rate from the backend
-   */
-  fetchSavedRate(): void {
-    // Simulate fetch or use localStorage as a fallback
+  private fetchSavedRate(): void {
     const savedRateData = localStorage.getItem('savedExchangeRate');
     if (savedRateData) {
-      const parsedData = JSON.parse(savedRateData);
-      this.savedRate = parsedData.rate;
-      this.lastUpdated = parsedData.lastUpdated;
-      this.canSaveRate = this.isNewDay(this.lastUpdated);
+      const parsed = JSON.parse(savedRateData);
+      this.savedRate = parsed.rate;
+      this.lastUpdated = parsed.lastUpdated;
     }
   }
 
-  /**
-   * Toggles between live and manual rate modes with optimized switching
-   */
-  toggleRateMode(): void {
-    this.useLiveRates = !this.useLiveRates;
-
-    if (this.useLiveRates) {
-      // Check localStorage for cached live rate
-      const cachedRate = localStorage.getItem('exchangeRateCache');
-      if (cachedRate) {
-        const parsed = JSON.parse(cachedRate);
-        this.liveRate = parsed.rate;
-        this.lastUpdated = new Date(parsed.timestamp).toISOString();
-      } else {
-        // Fetch live rate if no cache exists
-        this.fetchLiveRate();
-      }
-      this.manualRate = null;
-    } else {
-      this.liveRate = null;
-    }
+  private handleLiveRateFetchError(error: any): void {
+    this.fetchError = 'Failed to fetch live rate. Try again later.';
+    console.error('Error fetching live rate:', error);
   }
-
-  /**
-   * Saves a manually entered exchange rate
-   */
-  saveManualRate(): void {
-    if (!this.manualRate) return;
-
-    const payload = {
-      rate: this.manualRate,
-      date: new Date().toISOString()
-    };
-
-    // Use localStorage for saving manual rate
-    localStorage.setItem('savedExchangeRate', JSON.stringify({
-      rate: this.manualRate,
-      lastUpdated: payload.date
-    }));
-
-    this.savedRate = this.manualRate;
-    this.lastUpdated = payload.date;
-    this.canSaveRate = false;
-  }
-
-  /**
-   * Checks if the last updated date is different from today
-   */
-  private isNewDay(lastUpdated: string): boolean {
-    const lastUpdateDate = new Date(lastUpdated).toDateString();
-    const todayDate = new Date().toDateString();
-    return lastUpdateDate !== todayDate;
-  }
-
-  /**
-   * Returns the current active rate based on mode
-   */
-  getCurrentRate(): number | null {
-    return this.useLiveRates ? this.liveRate : this.manualRate;
-  }
-
-  /**
-   * Validates the manual rate input to allow only numbers and decimals
-   */
-  validateNumberInput(event: Event): void {
-    const inputElement = event.target as HTMLInputElement;
-    const sanitizedValue = inputElement.value.replace(/[^0-9.]/g, ''); // Allow digits and decimal points
-    const parts = sanitizedValue.split('.');
-
-    // Ensure only one decimal point is allowed
-    if (parts.length > 2) {
-      inputElement.value = `${parts[0]}.${parts[1]}`;
-    } else {
-      inputElement.value = sanitizedValue;
-    }
-}
 }

@@ -34,7 +34,7 @@
                 mode="indeterminate"
               ></mat-progress-spinner>
               <small class="text-gray-500">
-                Last updated: {{ lastUpdated | date:'short' }}
+                Last updated: {{ lastUpdated | date: 'short' }}
               </small>
             </div>
             <div *ngIf="fetchError" class="text-red-500 mt-2">
@@ -46,7 +46,7 @@
               <button
                 mat-raised-button
                 color="primary"
-                [disabled]="!liveRate || isFetchingLiveRate"
+                [disabled]="!liveRate || isFetchingLiveRate || !canSaveRate"
                 (click)="saveLiveRate()"
               >
                 Save Live Rate
@@ -81,10 +81,19 @@
                 mat-raised-button
                 color="primary"
                 class="ml-2"
-                [disabled]="!manualRate || !canSaveRate"
+                [disabled]="!manualRate || !canSaveManualRate"
                 (click)="saveManualRate()"
               >
                 Save Rate
+              </button>
+              <button
+                mat-raised-button
+                color="accent"
+                class="ml-2"
+                [disabled]="!manualRate"
+                (click)="updateManualRate()"
+              >
+                Update Rate
               </button>
             </div>
             <small class="text-gray-500 block mt-2">
