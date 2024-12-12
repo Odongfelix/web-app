@@ -51,7 +51,7 @@ export class McurrencyService {
    * @returns {Observable<any>}
    */
   createJournalEntry(journalEntry: any): Observable<any> {
-    return this.http.post('/journalentries', journalEntry);
+    return this.http.post('/m', journalEntry);
   }
 
   /**
@@ -388,5 +388,9 @@ export class McurrencyService {
   recreateProvisioningEntries(provisioningEntryId: string): Observable<any> {
     const httpParams = new HttpParams().set('command', 'recreateprovisioningentry');
     return this.http.post(`/provisioningentries/${provisioningEntryId}`, {}, { params: httpParams });
+  }
+
+  saveLiveRate(rate: any): Observable<any> {
+    return this.http.post('/mf', rate);
   }
 }

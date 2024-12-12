@@ -10,6 +10,7 @@ describe('AccountingService', () => {
   });
 
   it('should be created', inject([AccountingService], (service: AccountingService) => {
+    // @ts-ignore
     expect(service).toBeTruthy();
   }));
 });

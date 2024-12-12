@@ -249,7 +249,7 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Filters data in journal entries table based on passed value and poperty.
+   * Filters data in journal entries table based on passed value and property.
    * @param {string} filterValue Value to filter data.
    * @param {string} property Property to filter data by.
    */

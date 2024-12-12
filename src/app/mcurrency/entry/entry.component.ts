@@ -54,7 +54,8 @@ export class EntryComponent implements OnInit, AfterViewInit {
     private dialog: MatDialog,
     private configurationWizardService: ConfigurationWizardService,
     private popoverService: PopoverService
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     // Set max date to business date
@@ -261,9 +262,8 @@ export class EntryComponent implements OnInit, AfterViewInit {
   markFormGroupTouched(formGroup: UntypedFormGroup) {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
-
       if (control instanceof UntypedFormGroup) {
-        this.markFormGroupTouched(control);
+        this.markFormGroupTouched(control); // bad code
       }
     });
   }
