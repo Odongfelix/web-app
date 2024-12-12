@@ -2,6 +2,7 @@ import { Component, OnInit, TemplateRef, ElementRef, ViewChild, AfterViewInit } 
 import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, tap, finalize } from 'rxjs/operators';
 import { throwError, forkJoin } from 'rxjs';
 
@@ -19,6 +20,31 @@ interface Currency {
   displaySymbol?: string;
   nameCode?: string;
   displayLabel?: string;
+}
+
+/** GL Entry Interface */
+interface GLEntry {
+  glAccountId: number;
+  amount: number;
+}
+
+/** Journal Entry Interface */
+interface JournalEntry {
+  officeId: number;
+  currencyCode: string;
+  debits: GLEntry[];
+  credits: GLEntry[];
+  transactionDate: string;
+  referenceNumber?: string;
+  paymentTypeId?: number;
+  accountNumber?: string;
+  checkNumber?: string;
+  routingCode?: string;
+  receiptNumber?: string;
+  bankNumber?: string;
+  comments?: string;
+  dateFormat: string;
+  locale: string;
 }
 
 @Component({
@@ -57,7 +83,8 @@ export class EntryComponent implements OnInit, AfterViewInit {
     private dateUtils: Dates,
     private route: ActivatedRoute,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -208,49 +235,88 @@ export class EntryComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Submit form method
+   * Submit form method with navigation to view transaction
    */
   submit(): void {
+    // Check if the form is valid
     if (this.entryForm.valid) {
-      // Format the transaction date
+      // Prepare journal entry data
       const formattedDate = this.dateUtils.formatDate(
         this.entryForm.get('transactionDate').value,
-        'dd MMMM yyyy'
+        this.settingsService.dateFormat
       );
 
-      // Prepare journal entry data
-      const journalEntry = {
-        ...this.entryForm.value,
+      // Prepare journal entry object with type safety
+      const journalEntry: JournalEntry = {
         officeId: this.selectedOffice.id,
         currencyCode: this.selectedCurrency?.code || 'USD',
         transactionDate: formattedDate,
-        dateFormat: 'dd MMMM yyyy', // Add this explicitly
-        locale: 'en' // Add locale parameter
+        debits: this.entryForm.get('debits').value.map((debit: {glAccountId: number, amount: number}) => ({
+          glAccountId: debit.glAccountId,
+          amount: debit.amount
+        })),
+        credits: this.entryForm.get('credits').value.map((credit: {glAccountId: number, amount: number}) => ({
+          glAccountId: credit.glAccountId,
+          amount: credit.amount
+        })),
+        referenceNumber: this.entryForm.get('referenceNumber').value,
+        paymentTypeId: this.entryForm.get('paymentTypeId').value,
+        accountNumber: this.entryForm.get('accountNumber').value,
+        checkNumber: this.entryForm.get('checkNumber').value,
+        routingCode: this.entryForm.get('routingCode').value,
+        receiptNumber: this.entryForm.get('receiptNumber').value,
+        bankNumber: this.entryForm.get('bankNumber').value,
+        comments: this.entryForm.get('comments').value,
+        dateFormat: this.settingsService.dateFormat,
+        locale: this.settingsService.language.code
       };
 
       // Create journal entry
       this.mcurrencyService.createJournalEntry(journalEntry)
         .pipe(
           tap(response => {
-            console.log('Journal entry successfully created', response);
+            // Check if the response contains a resource ID
+            if (response && response.resourceId) {
+              // Show success notification
+              this.snackBar.open('Journal Entry Created Successfully', 'Close', {
+                duration: 3000,
+                horizontalPosition: 'end',
+                verticalPosition: 'top'
+              });
 
-            // Reset form to initial state
-            this.entryForm.reset();
+              // Navigate to the view transaction page
+              this.router.navigate(['../transactions/view', response.transactionId])
+                .catch(navError => {
+                  console.error('Navigation error', navError);
+                  this.snackBar.open('Created, but unable to navigate to transaction view', 'Close', {
+                    duration: 3000,
+                    horizontalPosition: 'end',
+                    verticalPosition: 'top'
+                  });
+                });
 
-            // Reset to default values
-            if (this.officeData.length > 0) {
-              this.entryForm.get('officeId').setValue(this.officeData[0].id);
+              // Reset form to initial state
+              this.resetForm();
+            } else {
+              // Handle unexpected response
+              this.snackBar.open('Journal Entry Created, but no transaction ID returned', 'Close', {
+                duration: 3000,
+                horizontalPosition: 'end',
+                verticalPosition: 'top'
+              });
             }
-            this.entryForm.get('currencyCode').setValue('USD');
-
-            // Reset form arrays
-            this.entryForm.setControl('debits', this.formBuilder.array([this.createAffectedGLEntryForm()]));
-            this.entryForm.setControl('credits', this.formBuilder.array([this.createAffectedGLEntryForm()]));
           }),
           catchError(error => {
             console.error('Failed to create journal entry', error);
 
-            // Optionally mark form fields as touched to show validation errors
+            // Show error notification
+            this.snackBar.open('Failed to Create Journal Entry', 'Close', {
+              duration: 3000,
+              horizontalPosition: 'end',
+              verticalPosition: 'top'
+            });
+
+            // Mark form fields as touched to show validation errors
             Object.keys(this.entryForm.controls).forEach(key => {
               const control = this.entryForm.get(key);
               control.markAsTouched();
@@ -260,14 +326,37 @@ export class EntryComponent implements OnInit, AfterViewInit {
           })
         ).subscribe();
     } else {
-      console.warn('Form is invalid');
-
       // Mark all form controls as touched to show validation errors
       Object.keys(this.entryForm.controls).forEach(key => {
         const control = this.entryForm.get(key);
         control.markAsTouched();
       });
+
+      // Show form validation error notification
+      this.snackBar.open('Please fill in all required fields', 'Close', {
+        duration: 3000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top'
+      });
     }
+  }
+
+  /**
+   * Reset form to initial state
+   */
+  private resetForm(): void {
+    // Reset form
+    this.entryForm.reset();
+
+    // Reset to default values
+    if (this.officeData.length > 0) {
+      this.entryForm.get('officeId').setValue(this.officeData[0].id);
+    }
+    this.entryForm.get('currencyCode').setValue('USD');
+
+    // Reset form arrays
+    this.entryForm.setControl('debits', this.formBuilder.array([this.createAffectedGLEntryForm()]));
+    this.entryForm.setControl('credits', this.formBuilder.array([this.createAffectedGLEntryForm()]));
   }
 
   ngAfterViewInit(): void {
