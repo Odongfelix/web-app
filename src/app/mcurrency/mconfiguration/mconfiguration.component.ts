@@ -1,12 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, of, from, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
-import { McurrencyService } from '../mcurrency.service';
-import { NextStepDialogComponent } from '../../configuration-wizard/next-step-dialog/next-step-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
-import { PopoverComponent } from '../../configuration-wizard/popover/popover.component';
-import { NotificationComponent } from '../../system/external-services/notification/notification.component';
-import { AlertService } from '../../core/alert/alert.service';
+import { Observable, of, from } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 interface ExchangeRateResponse {
   rates: {
@@ -65,22 +59,7 @@ export class MconfigurationComponent implements OnInit {
     this.canSaveRate = false;
 
     // Optional: Add any additional backend API call if required
-    this.mCurrencyService.saveLiveRate(payload)
-      .pipe(
-        tap(response => {
-          // react on success
-          this.dialog.open(AlertService, {
-            data: {
-              title: 'Live rate saved',
-              message: 'Live rate has been successfully saved.'
-            }
-          });
-        }),
-        catchError(error => {
-          // Show error dialog
-          return throwError(error);
-        })
-      ).subscribe();
+    // this.saveRateToBackend(payload);
   }
 
   /**
@@ -122,11 +101,7 @@ export class MconfigurationComponent implements OnInit {
   private apiUrl = '/api/mcurrency';
   private liveRateApiUrl = 'https://api.exchangerate-api.com/v4/latest/USD';
 
-  constructor(
-    private mCurrencyService: McurrencyService,
-    private dialog: MatDialog
-  ) {
-  }
+  constructor() {}
 
   ngOnInit(): void {
     this.initializeComponent();
@@ -157,6 +132,7 @@ export class MconfigurationComponent implements OnInit {
         return of(this.liveRate);
       }
     }
+
 
 
     this.isFetchingLiveRate = true;
@@ -300,5 +276,5 @@ export class MconfigurationComponent implements OnInit {
     } else {
       inputElement.value = sanitizedValue;
     }
-  }
+}
 }

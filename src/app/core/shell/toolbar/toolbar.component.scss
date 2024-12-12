@@ -1,5 +1,9 @@
 #mifosx-toolbar {
   position: relative;
+  display: flex; /* Ensure the toolbar contents are in a row */
+  overflow-x: auto; /* Allow horizontal scrolling */
+  overflow-y: hidden; /* Prevent vertical scrolling */
+  white-space: nowrap; /* Prevent items from wrapping to the next line */
   box-shadow:
     0 3px 1px -2px rgb(0 0 0 / 20%),
     0 2px 2px 0 rgb(0 0 0 / 14%),
@@ -42,7 +46,6 @@
   }
 }
 
-// Show icon on small screens
 .lg-icon {
   display: none;
 }
@@ -52,4 +55,18 @@
     display: block;
     margin-left: 5px;
   }
+}
+
+/* Optional: Customize scrollbar for horizontal scrolling */
+#mifosx-toolbar::-webkit-scrollbar {
+  height: 1px;
+}
+
+#mifosx-toolbar::-webkit-scrollbar-thumb {
+  background: #c3c3c3; /* Scrollbar color */
+  border-radius: 1px;
+}
+
+#mifosx-toolbar::-webkit-scrollbar-thumb:hover {
+  background: #c6b4b4;
 }
