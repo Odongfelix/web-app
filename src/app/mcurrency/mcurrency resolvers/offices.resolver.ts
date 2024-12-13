@@ -1,30 +1,17 @@
-/** Angular Imports */
 import { Injectable } from '@angular/core';
-import { Resolve } from '@angular/router';
-
-/** rxjs Imports */
-import { Observable } from 'rxjs';
-
-/** Custom Services */
+import {
+  Router, Resolve,
+  RouterStateSnapshot,
+  ActivatedRouteSnapshot
+} from '@angular/router';
+import { Observable, of } from 'rxjs';
 import { McurrencyService } from '../mcurrency.service';
 
-/**
- * Offices data resolver.
- */
 @Injectable()
-export class OfficesResolver implements Resolve<Object> {
-
-  /**
-   * @param {AccountingService} accountingService Accounting service.
-   */
-  constructor(private accountingService: McurrencyService) {}
-
-  /**
-   * Returns the offices data.
-   * @returns {Observable<any>}
-   */
-  resolve(): Observable<any> {
-    return this.accountingService.getOffices();
+export class OfficesResolver implements Resolve<boolean> {
+  constructor(private mcurrencyService: McurrencyService) {
   }
-
+  resolve(): Observable<any> {
+    return this.mcurrencyService.getOffices();
+  }
 }

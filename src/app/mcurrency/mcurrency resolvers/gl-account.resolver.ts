@@ -8,9 +8,9 @@ import { Observable, of } from 'rxjs';
 import { McurrencyService } from '../mcurrency.service';
 
 @Injectable()
-export class CurrenciesResolver implements Resolve<Object> {
+export class GlAccountResolver implements Resolve<boolean> {
   constructor(private mcurrencyService: McurrencyService) {}
   resolve(): Observable<any> {
-    return this.mcurrencyService.getCurrencies();
+    return this.mcurrencyService.getGlAccounts()
   }
 }
