@@ -2,12 +2,15 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { AccountingService } from '../../accounting/accounting.service';
+import {McurrencyService} from '../mcurrency.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { Location } from '@angular/common';
-import { ViewJournalEntryComponent } from '../../shared/accounting/view-journal-entry/view-journal-entry.component';
 import { RevertTransactionComponent } from '../../accounting/revert-transaction/revert-transaction.component';
+import { TranslateModule } from '@ngx-translate/core';
+import { PipesModule } from '../../pipes/pipes.module';
+import { CoreModule } from '../../core/core.module';
+import { DirectivesModule } from '../../directives/directives.module';
 
 interface JournalEntry {
   id: string;
@@ -24,6 +27,12 @@ interface JournalEntry {
   selector: 'mifosx-view-entry',
   templateUrl: './view-entry.component.html',
   standalone: true,
+  imports: [
+    TranslateModule,
+    PipesModule,
+    CoreModule,
+    DirectivesModule
+  ],
   styleUrls: ['./view-entry.component.scss']
 })
 export class ViewEntryComponent implements OnInit {
@@ -31,6 +40,7 @@ export class ViewEntryComponent implements OnInit {
   entriesData: JournalEntry[];
   transaction: any;
   transactionId: string;
+
 
   displayedColumns: string[] = ['id', 'glAccountType', 'glAccountCode', 'glAccountName', 'debit', 'credit'];
   dataSource: MatTableDataSource<JournalEntry>;
@@ -41,7 +51,7 @@ export class ViewEntryComponent implements OnInit {
   isEntryLoaded = false;
 
   constructor(
-    private accountingService: AccountingService,
+    private mcurrencyService: McurrencyService,
     private route: ActivatedRoute,
     private router: Router,
     public dialog: MatDialog,
@@ -108,8 +118,8 @@ export class ViewEntryComponent implements OnInit {
     this.dataSource.sort = this.sort;
   }
 
-  viewJournalEntry(journalEntry: JournalEntry) {
-    this.dialog.open(ViewJournalEntryComponent, {
+  viewEntry(journalEntry: JournalEntry) {
+    this.dialog.open(ViewEntryComponent, {
       data: { entry: journalEntry }
     });
   }
@@ -125,7 +135,7 @@ export class ViewEntryComponent implements OnInit {
     revertTransactionDialogRef.afterClosed().subscribe({
       next: (response: any) => {
         if (response.revert) {
-          this.accountingService.revertTransaction(this.transactionId, response.comments)
+          this.mcurrencyService.revertTransaction(this.transactionId, response.comments)
             .subscribe({
               next: (reversedTransaction: any) => {
                 this.dataSource.data[0].reversed = true;

@@ -47,6 +47,12 @@ interface JournalEntry {
   locale: string;
 }
 
+/** Response Interface for Journal Entry Creation */
+interface JournalEntryResponse {
+  resourceId?: number;
+  transactionId?: number;
+}
+
 @Component({
   selector: 'mifosx-entry',
   templateUrl: './entry.component.html',
@@ -274,9 +280,9 @@ export class EntryComponent implements OnInit, AfterViewInit {
       // Create journal entry
       this.mcurrencyService.createJournalEntry(journalEntry)
         .pipe(
-          tap(response => {
+          tap((response: JournalEntryResponse) => {
             // Check if the response contains a resource ID
-            if (response && response.resourceId) {
+            if (response && (response.resourceId || response.transactionId)) {
               // Show success notification
               this.snackBar.open('Journal Entry Created Successfully', 'Close', {
                 duration: 3000,
@@ -285,15 +291,19 @@ export class EntryComponent implements OnInit, AfterViewInit {
               });
 
               // Navigate to the view transaction page
-              this.router.navigate(['../transactions/view', response.transactionId])
-                .catch(navError => {
-                  console.error('Navigation error', navError);
-                  this.snackBar.open('Created, but unable to navigate to transaction view', 'Close', {
-                    duration: 3000,
-                    horizontalPosition: 'end',
-                    verticalPosition: 'top'
-                  });
+              // Prioritize transactionId, fall back to resourceId
+              const navigationId = response.transactionId || response.resourceId;
+
+              this.router.navigate(['../transactions/view',navigationId], {
+                relativeTo: this.route
+              }).catch(navError => {
+                console.error('Navigation error', navError);
+                this.snackBar.open('Created, but unable to navigate to transaction view', 'Close', {
+                  duration: 3000,
+                  horizontalPosition: 'end',
+                  verticalPosition: 'top'
                 });
+              });
 
               // Reset form to initial state
               this.resetForm();
