@@ -7,7 +7,10 @@ import {
 import { Observable, of } from 'rxjs';
 import { McurrencyService } from '../mcurrency.service';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+  }
+)
 export class OfficesResolver implements Resolve<boolean> {
   constructor(private mcurrencyService: McurrencyService) {
   }

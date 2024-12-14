@@ -3,17 +3,13 @@ import { RouterModule, Routes } from '@angular/router';
 import { MconfigurationComponent } from './mconfiguration/mconfiguration.component';
 import { EntryComponent } from './entry/entry.component';
 import { ReportingComponent } from './reporting/reporting.component';
-import { ShellComponent } from '../core/shell/shell.component';
 import { Route } from '../core/route/route.service';
-import * as path from 'path';
-import {
-  ViewJournalEntryTransactionComponent
-} from '../shared/accounting/view-journal-entry-transaction/view-journal-entry-transaction.component';
-import { JournalEntryTransactionResolver } from '../accounting/common-resolvers/journal-entry-transaction.resolver';
-import { CurrenciesResolver } from '../organization/currencies/currencies.resolver';
-import { PaymentTypesResolver } from '../organization/payment-types/payment-types.resolver';
-import { GlAccountsResolver } from '../accounting/common-resolvers/gl-accounts.resolver';
-import { OfficesResolver } from '../navigation/offices.resolver';
+import {ViewEntryComponent} from './view-entry/view-entry.component';
+import {MJournalEntryTransactionResolver} from './mcurrency resolvers/m-journal-entry-transaction.resolver';
+import {CurrenciesResolver} from './mcurrency resolvers/currencies.resolver';
+import {PaymentTypesResolver} from './mcurrency resolvers/payment-types.resolver';
+import {GlAccountResolver} from './mcurrency resolvers/gl-account.resolver'
+import {OfficesResolver} from './mcurrency resolvers/offices.resolver';
 
 const routes: Routes = [
   Route.withShell([
@@ -35,7 +31,7 @@ const routes: Routes = [
         office: OfficesResolver,
         currencies: CurrenciesResolver,
         paymentTypes: PaymentTypesResolver,
-        glAccount: GlAccountsResolver
+        glAccount: GlAccountResolver
       },
       children: [
         {
@@ -44,10 +40,10 @@ const routes: Routes = [
           children: [
             {
               path: 'view/:id',
-              component: ViewJournalEntryTransactionComponent,
+              component: ViewEntryComponent,
               data: { title: 'View Transaction', routeParamBreadcrumb: 'id' },
               resolve: {
-                transaction: JournalEntryTransactionResolver
+                transaction: MJournalEntryTransactionResolver
               }
             }
           ]
