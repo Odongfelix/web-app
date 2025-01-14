@@ -131,6 +131,76 @@ export class CreateLoanProductComponent implements OnInit {
     );
   }
 
+  /**
+   * {
+   *   "name": "product name",
+   *   "shortName": "sn",
+   *   "includeInBorrowerCycle": false,
+   *   "currencyCode": "USD",
+   *   "digitsAfterDecimal": 2,
+   *   "inMultiplesOf": 0,
+   *   "useBorrowerCycle": false,
+   *   "principal": 1,
+   *   "numberOfRepayments": 1,
+   *   "isLinkedToFloatingInterestRates": false,
+   *   "allowApprovedDisbursedAmountsOverApplied": false,
+   *   "interestRatePerPeriod": 1,
+   *   "interestRateFrequencyType": 2,
+   *   "repaymentEvery": 1,
+   *   "repaymentFrequencyType": 2,
+   *   "repaymentStartDateType": 1,
+   *   "fixedLength": null,
+   *   "principalVariationsForBorrowerCycle": [],
+   *   "numberOfRepaymentVariationsForBorrowerCycle": [],
+   *   "interestRateVariationsForBorrowerCycle": [],
+   *   "amortizationType": 1,
+   *   "interestType": 1,
+   *   "isEqualAmortization": false,
+   *   "interestCalculationPeriodType": 0,
+   *   "transactionProcessingStrategyCode": "early-repayment-strategy",
+   *   "graceOnPrincipalPayment": "",
+   *   "graceOnInterestPayment": "",
+   *   "graceOnInterestCharged": "",
+   *   "inArrearsTolerance": "",
+   *   "daysInYearType": 1,
+   *   "daysInMonthType": 1,
+   *   "canDefineInstallmentAmount": false,
+   *   "graceOnArrearsAgeing": "",
+   *   "overdueDaysForNPA": "",
+   *   "accountMovesOutOfNPAOnlyOnArrearsCompletion": false,
+   *   "principalThresholdForLastInstallment": "",
+   *   "allowVariableInstallments": false,
+   *   "disallowExpectedDisbursements": false,
+   *   "canUseForTopup": false,
+   *   "isInterestRecalculationEnabled": false,
+   *   "holdGuaranteeFunds": false,
+   *   "multiDisburseLoan": false,
+   *   "allowPartialPeriodInterestCalcualtion": false,
+   *   "allowAttributeOverrides": {
+   *     "amortizationType": true,
+   *     "interestType": true,
+   *     "transactionProcessingStrategyCode": true,
+   *     "interestCalculationPeriodType": true,
+   *     "inArrearsTolerance": true,
+   *     "repaymentEvery": true,
+   *     "graceOnPrincipalAndInterestPayment": true,
+   *     "graceOnArrearsAgeing": true
+   *   },
+   *   "delinquencyBucketId": null,
+   *   "enableDownPayment": false,
+   *   "enableInstallmentLevelDelinquency": false,
+   *   "useDueForRepaymentsConfigurations": false,
+   *   "dueDaysForRepaymentEvent": 1,
+   *   "overDueDaysForRepaymentEvent": 1,
+   *   "loanScheduleType": "CUMULATIVE",
+   *   "allowAccrualPostingInArrears": false,
+   *   "charges": [],
+   *   "accountingRule": 1,
+   *   "dateFormat": "dd MMMM yyyy",
+   *   "locale": "en"
+   * }
+   */
+
   get loanProduct() {
     const loanProduct = {
       ...this.loanProductDetailsStep.loanProductDetails,
@@ -160,9 +230,11 @@ export class CreateLoanProductComponent implements OnInit {
       delete loanProduct['supportedInterestRefundTypes'];
     }
     delete loanProduct['useDueForRepaymentsConfigurations'];
+    delete loanProduct['allowAccrualPostingInArrears'];
 
     this.productsService.createLoanProduct(loanProduct)
       .subscribe((response: any) => {
+        console.log(response);
         this.router.navigate(['../', response.resourceId], { relativeTo: this.route });
       });
   }

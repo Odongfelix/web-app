@@ -210,6 +210,10 @@ export class LoanProductSettingsStepComponent implements OnInit {
     }
   }
 
+  change(){
+    console.log("Felix");
+  }
+
   createLoanProductSettingsForm() {
     this.loanProductSettingsForm = this.formBuilder.group({
       'amortizationType': ['', Validators.required],
