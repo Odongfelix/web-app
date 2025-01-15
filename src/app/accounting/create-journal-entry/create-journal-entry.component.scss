@@ -1,0 +1,21 @@
+.currency-section {
+  mat-form-field {
+    margin-right: 1rem;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  .mat-form-field-prefix {
+    margin-right: 0.5rem;
+    color: rgb(0 0 0 / 60%);
+  }
+
+  .mat-form-field-suffix {
+    margin-left: 0.5rem;
+    color: rgb(0 0 0 / 60%);
+  }
+}

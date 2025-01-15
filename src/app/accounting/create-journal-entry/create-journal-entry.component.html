@@ -16,18 +16,29 @@
             </mat-error>
           </mat-form-field>
 
-          <mat-form-field fxFlex="48%">
-            <mat-label>{{ 'labels.inputs.Currency' | translate }}</mat-label>
-            <mat-select required formControlName="currencyCode">
-              <mat-option *ngFor="let currency of currencyData" [value]="currency.code">
-                {{ currency.displayLabel }}
-              </mat-option>
-            </mat-select>
-            <mat-error *ngIf="journalEntryForm.controls.currencyCode.hasError('required')">
-              {{ 'labels.inputs.Currency' | translate }} {{ 'labels.commons.is' | translate }}
-              <strong>{{ 'labels.commons.required' | translate }}</strong>
-            </mat-error>
-          </mat-form-field>
+          <div fxLayout="row wrap" fxLayoutGap="2%" fxLayout.lt-md="column">
+            <mat-form-field fxFlex="31%">
+              <mat-label>{{ 'labels.inputs.Currency' | translate }}</mat-label>
+              <mat-select formControlName="currencyCode" required>
+                <mat-option *ngFor="let currency of currencyData" [value]="currency.code">
+                  {{ currency.displayLabel }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="journalEntryForm.controls.currencyCode.hasError('required')">
+                {{ 'labels.inputs.Currency' | translate }} {{ 'labels.commons.is' | translate }}
+                <strong>{{ 'labels.commons.required' | translate }}</strong>
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field
+              fxFlex="31%"
+              *ngIf="journalEntryForm.get('currencyCode').value && journalEntryForm.get('currencyCode').value !== 'UGX'"
+            >
+              <mat-label>{{ 'Exchange Rate' }}</mat-label>
+              <input matInput type="number" formControlName="exchangeRate" required />
+              <mat-hint>Exchange rate to UGX</mat-hint>
+            </mat-form-field>
+          </div>
 
           <div
             fxFlexFill
