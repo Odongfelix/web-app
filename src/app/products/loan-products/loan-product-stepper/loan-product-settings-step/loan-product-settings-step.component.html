@@ -87,7 +87,6 @@
         formControlName="transactionProcessingStrategyCode"
         matTooltip="{{ 'tooltips.The repayment strategy' | translate }}"
         required
-
       >
         <mat-option
           *ngFor="let transactionProcessingStrategy of transactionProcessingStrategyData"
@@ -749,12 +748,11 @@
     <mat-divider fxFlex="98%"></mat-divider>
 
     <h3 fxFlex="23%" class="mat-h3">
-      {{
-        'labels.heading.Event Settings' | translate
+      {{ 'labels.heading.Event Settings' | translate
       }}<i
-      class="fas fa-question"
-      matTooltip="{{ 'tooltips.Setting for event notifications to be sent' | translate }}"
-    ></i>
+        class="fas fa-question"
+        matTooltip="{{ 'tooltips.Setting for event notifications to be sent' | translate }}"
+      ></i>
     </h3>
 
     <mat-checkbox

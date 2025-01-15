@@ -41,6 +41,7 @@ export class MigrateOpeningBalancesComponent implements OnInit, AfterViewInit {
   debitsSum = 0;
   /** Sum total of credits. */
   creditsSum = 0;
+  exchangeRate: number = 1;
 
   /* Reference of search form */
   @ViewChild('searchFormRef') searchFormRef: ElementRef<any>;
@@ -91,11 +92,18 @@ export class MigrateOpeningBalancesComponent implements OnInit, AfterViewInit {
       'officeId': ['', Validators.required],
       'currencyCode': ['', Validators.required],
       'transactionDate': ['', Validators.required],
+      'exchangeRate': [],
       'glAccountEntries': this.formBuilder.array([])
     });
 
     this.openingBalancesForm.controls.currencyCode.valueChanges.subscribe((value: string) => {
       this.currencyCode = value;
+      if (value === 'UGX') {
+        this.openingBalancesForm.patchValue({ exchangeRate: 1 });
+        this.openingBalancesForm.get('exchangeRate').disable();
+      } else {
+        this.openingBalancesForm.get('exchangeRate').enable();
+      }
     });
   }
 
@@ -165,12 +173,20 @@ export class MigrateOpeningBalancesComponent implements OnInit, AfterViewInit {
       }
       openingBalances.debits = [];
       openingBalances.credits = [];
+      const exchangeRate = this.openingBalancesForm.get('exchangeRate').value;
+
       this.openingBalancesForm.value.glAccountEntries.forEach((entry: any) => {
         if (entry.debit) {
-          openingBalances.debits.push({ glAccountId: entry.glAccountId, amount: entry.debit });
+          openingBalances.debits.push({
+            glAccountId: entry.glAccountId,
+            amount: entry.debit * exchangeRate
+          });
         }
         if (entry.credit) {
-          openingBalances.credits.push({ glAccountId: entry.glAccountId, amount: entry.credit });
+          openingBalances.credits.push({
+            glAccountId: entry.glAccountId,
+            amount: entry.credit * exchangeRate
+          });
         }
       });
       delete openingBalances.glAccountEntries;

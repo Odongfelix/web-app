@@ -37,6 +37,8 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
   paymentTypeData: any;
   /** Gl Account data. */
   glAccountData: any;
+  /** Exchange rate. */
+  exchangeRate: number = 1;
 
   /* Reference of create journal form */
   @ViewChild('createJournalFormRef') createJournalFormRef: ElementRef<any>;
@@ -76,6 +78,17 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * Creates the affected gl entry form.
+   * @returns {FormGroup} Affected gl entry form.
+   */
+  createAffectedGLEntryForm(): UntypedFormGroup {
+    return this.formBuilder.group({
+      'glAccountId': ['', Validators.required],
+      'amount': ['', Validators.required]
+    });
+  }
+
+  /**
    * Creates the journal entry form.
    */
   ngOnInit() {
@@ -100,19 +113,19 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
       'routingCode': [''],
       'receiptNumber': [''],
       'bankNumber': [''],
+      'exchangeRate': [1],
       'comments': ['']
     });
-  }
 
-  /**
-   * Creates the affected gl entry form.
-   * @returns {FormGroup} Affected gl entry form.
-   */
-  createAffectedGLEntryForm(): UntypedFormGroup {
-    return this.formBuilder.group({
-      'glAccountId': ['', Validators.required],
-      'amount': ['', Validators.required]
-    });
+    this.journalEntryForm.get('currencyCode').valueChanges
+      .subscribe((value: string) => {
+        if (value === 'UGX') {
+          this.journalEntryForm.patchValue({ exchangeRate: 1 });
+          this.journalEntryForm.get('exchangeRate').disable();
+        } else {
+          this.journalEntryForm.get('exchangeRate').enable();
+        }
+      });
   }
 
   /**
@@ -154,14 +167,24 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
    */
   submit() {
     const journalEntry = this.journalEntryForm.value;
-    // TODO: Update once language and date settings are setup
-    journalEntry.locale = this.settingsService.language.code;
-    journalEntry.dateFormat = this.settingsService.dateFormat;
-    if (journalEntry.transactionDate) {
+    const exchangeRate = this.journalEntryForm.get('exchangeRate').value;
+    
+    if (journalEntry.transactionDate instanceof Date) {
       journalEntry.transactionDate = this.dateUtils.formatDate(journalEntry.transactionDate, this.settingsService.dateFormat);
     }
-    this.accountingService.createJournalEntry(journalEntry).subscribe(response => {
-      this.router.navigate(['../transactions/view', response.transactionId], { relativeTo: this.route });
+
+    journalEntry.debits.forEach((debit: any) => {
+      debit.amount = debit.amount * exchangeRate;
+    });
+    journalEntry.credits.forEach((credit: any) => {
+      credit.amount = credit.amount * exchangeRate;
+    });
+
+    journalEntry.locale = this.settingsService.language.code;
+    journalEntry.dateFormat = this.settingsService.dateFormat;
+
+    this.accountingService.createJournalEntry(journalEntry).subscribe((response: any) => {
+      this.router.navigate(['/accounting/journal-entries/transactions/view', response.transactionId]);
     });
   }
 
