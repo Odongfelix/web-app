@@ -26,6 +26,36 @@
           </div>
         </div>
 
+        <div fxLayout="row" fxLayoutGap="2%" fxLayout.lt-md="column">
+          <div class="currency-section" fxFlex="83%" fxLayout="row" fxLayoutGap="2%">
+            <mat-form-field fxFlex="60%">
+              <mat-label>{{ 'labels.inputs.Currency' | translate }}</mat-label>
+              <mat-select required formControlName="currencyCode">
+                <mat-option *ngFor="let currency of currencyData" [value]="currency.code">
+                  {{ currency.displayLabel }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="openingBalancesForm.controls.currencyCode.hasError('required')">
+                {{ 'labels.inputs.Currency' | translate }} {{ 'labels.commons.is' | translate }}
+                <strong>{{ 'labels.commons.required' | translate }}</strong>
+              </mat-error>
+            </mat-form-field>
+
+            <!--Rate provision for migrating opening balances-->
+
+            <mat-form-field fxFlex="38%" *ngIf="currencyCode && currencyCode !== 'UGX'">
+              <mat-label>{{ 'Exchange Rate' }}</mat-label>
+              <input matInput type="number" formControlName="exchangeRate" required />
+              <span matPrefix>1 {{ currencyCode }} = </span>
+              <span matSuffix>UGX</span>
+              <mat-error *ngIf="openingBalancesForm.controls.exchangeRate.hasError('required')">
+                {{ 'Exchange Rate' }} {{ 'labels.commons.is' | translate }}
+                <strong>{{ 'labels.commons.required' | translate }}</strong>
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
         <div fxLayout="row wrap" fxLayoutGap="2%" fxLayout.lt-md="column" *ngIf="openingBalancesData">
           <mifosx-gl-account-display
             fxFlex="100%"
