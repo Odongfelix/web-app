@@ -13,6 +13,7 @@ import { ConfigurationWizardService } from '../../configuration-wizard/configura
 
 /** Custom Dialog Component */
 import { NextStepDialogComponent } from '../../configuration-wizard/next-step-dialog/next-step-dialog.component';
+
 /**
  * Create Journal Entry component.
  */
@@ -22,6 +23,24 @@ import { NextStepDialogComponent } from '../../configuration-wizard/next-step-di
   styleUrls: ['./create-journal-entry.component.scss']
 })
 export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
+  converted = false;
+  convertedAmount = 0;
+  amount = 0;
+  rate =1;
+
+  setRate(rate: number) {
+    this.rate = rate;
+    this.convertedAmount = rate * this.amount;
+  }
+
+  setAmount(amount: number) {
+    this.amount = amount;
+    this.convertedAmount = this.rate * this.amount;
+  }
+
+  changeConverted() {
+    this.converted = !this.converted;
+  }
 
   /** Minimum transaction date allowed. */
   minDate = new Date(2000, 0, 1);
@@ -56,14 +75,14 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
    * @param {PopoverService} popoverService PopoverService.
    */
   constructor(private formBuilder: UntypedFormBuilder,
-    private accountingService: AccountingService,
-    private settingsService: SettingsService,
-    private dateUtils: Dates,
-    private route: ActivatedRoute,
-    private router: Router,
-    private dialog: MatDialog,
-    private configurationWizardService: ConfigurationWizardService,
-    private popoverService: PopoverService) {
+              private accountingService: AccountingService,
+              private settingsService: SettingsService,
+              private dateUtils: Dates,
+              private route: ActivatedRoute,
+              private router: Router,
+              private dialog: MatDialog,
+              private configurationWizardService: ConfigurationWizardService,
+              private popoverService: PopoverService) {
     this.route.data.subscribe((data: {
       offices: any,
       currencies: any,
@@ -168,7 +187,7 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
   submit() {
     const journalEntry = this.journalEntryForm.value;
     const exchangeRate = this.journalEntryForm.get('exchangeRate').value;
-    
+
     if (journalEntry.transactionDate instanceof Date) {
       journalEntry.transactionDate = this.dateUtils.formatDate(journalEntry.transactionDate, this.settingsService.dateFormat);
     }
@@ -229,21 +248,21 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
    * Next Step (Products) Dialog Configuration Wizard.
    */
   openNextStepDialog() {
-    const nextStepDialogRef = this.dialog.open( NextStepDialogComponent, {
+    const nextStepDialogRef = this.dialog.open(NextStepDialogComponent, {
       data: {
         nextStepName: 'Setup Products',
         previousStepName: 'Accounting',
         stepPercentage: 74
-      },
+      }
     });
     nextStepDialogRef.afterClosed().subscribe((response: { nextStep: boolean }) => {
-    if (response.nextStep) {
-      this.configurationWizardService.showCreateJournalEntries = false;
-      this.configurationWizardService.showCharges = true;
-      this.router.navigate(['/products']);
+      if (response.nextStep) {
+        this.configurationWizardService.showCreateJournalEntries = false;
+        this.configurationWizardService.showCharges = true;
+        this.router.navigate(['/products']);
       } else {
-      this.configurationWizardService.showCreateJournalEntries = false;
-      this.router.navigate(['/home']);
+        this.configurationWizardService.showCreateJournalEntries = false;
+        this.router.navigate(['/home']);
       }
     });
   }

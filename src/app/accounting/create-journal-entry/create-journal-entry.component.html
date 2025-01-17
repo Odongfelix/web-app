@@ -17,7 +17,7 @@
           </mat-form-field>
 
           <div fxLayout="row wrap" fxLayoutGap="2%" fxLayout.lt-md="column">
-            <mat-form-field fxFlex="31%">
+            <mat-form-field fxFlex="48%">
               <mat-label>{{ 'labels.inputs.Currency' | translate }}</mat-label>
               <mat-select formControlName="currencyCode" required>
                 <mat-option *ngFor="let currency of currencyData" [value]="currency.code">
@@ -30,13 +30,35 @@
               </mat-error>
             </mat-form-field>
 
+            <mat-checkbox (input)="changeConverted()">
+              <mat-label>Convert currency</mat-label>
+            </mat-checkbox>
+
             <mat-form-field
-              fxFlex="31%"
-              *ngIf="journalEntryForm.get('currencyCode').value && journalEntryForm.get('currencyCode').value !== 'UGX'"
+              fxFlex="48%"
+              *ngIf="converted"
             >
-              <mat-label>{{ 'Exchange Rate' }}</mat-label>
-              <input matInput type="number" formControlName="exchangeRate" required />
+              <mat-label>Exchange rate</mat-label>
+              <input matInput type="number" (input)="setRate($event.target.value)" [value]="rate" />
               <mat-hint>Exchange rate to UGX</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field
+              fxFlex="48%"
+              *ngIf="converted"
+            >
+              <mat-label>Amount</mat-label>
+              <input matInput type="number" (input)="setAmount($event.target.value)" [value]="amount"/>
+              <mat-hint>Amount to convert to UGX</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field
+              fxFlex="48%"
+              *ngIf="converted"
+            >
+              <mat-label>Converted amount</mat-label>
+              <input matInput type="number" [value]="convertedAmount" />
+              <mat-hint>Converted amount in UGX</mat-hint>
             </mat-form-field>
           </div>
 
@@ -185,7 +207,8 @@
 
           <mat-form-field fxFlex="98%">
             <mat-label>{{ 'labels.inputs.Comments' | translate }}</mat-label>
-            <textarea matInput formControlName="comments" cdkTextareaAutosize cdkAutosizeMinRows="2"></textarea>
+            <textarea required matInput formControlName="comments" cdkTextareaAutosize
+                      cdkAutosizeMinRows="2"></textarea>
           </mat-form-field>
         </div>
       </mat-card-content>
@@ -212,8 +235,8 @@
   <p class="mw300">
     {{ 'labels.text.Red asterisk field' | translate }}
     <a href="https://mifosforge.jira.com/wiki/spaces/docs/pages/67895310/Add+Journal+Entries" target="_blank">{{
-      'labels.inputs.Add Journal Entries' | translate
-    }}</a>
+        'labels.inputs.Add Journal Entries' | translate
+      }}</a>
   </p>
   <div fxLayout="row" fxLayoutAlign="end" fxLayoutGap="2%" fxLayout.lt-md="column">
     <button mat-raised-button color="warn" (click)="popover.close(); configurationWizardService.closeConfigWizard()">
