@@ -30,36 +30,41 @@
               </mat-error>
             </mat-form-field>
 
-            <mat-checkbox (input)="changeConverted()">
-              <mat-label>Convert currency</mat-label>
-            </mat-checkbox>
+            <div fxLayout="row wrap" fxLayoutGap="2%" fxLayout.lt-md="column" *ngIf="showCurrencyConverter">
+              <mat-form-field fxFlex="48%">
+                <mat-label>Exchange rate</mat-label>
+                <input 
+                  matInput 
+                  type="number" 
+                  (input)="setRate($event.target.value)" 
+                  [value]="rate"
+                  required
+                />
+                <mat-hint>Exchange rate to UGX</mat-hint>
+              </mat-form-field>
 
-            <mat-form-field
-              fxFlex="48%"
-              *ngIf="converted"
-            >
-              <mat-label>Exchange rate</mat-label>
-              <input matInput type="number" (input)="setRate($event.target.value)" [value]="rate" />
-              <mat-hint>Exchange rate to UGX</mat-hint>
-            </mat-form-field>
+              <mat-form-field fxFlex="48%">
+                <mat-label>Amount</mat-label>
+                <input 
+                  matInput 
+                  type="number" 
+                  (input)="setAmount($event.target.value)" 
+                  [value]="amount"
+                />
+                <mat-hint>Amount to convert to UGX</mat-hint>
+              </mat-form-field>
 
-            <mat-form-field
-              fxFlex="48%"
-              *ngIf="converted"
-            >
-              <mat-label>Amount</mat-label>
-              <input matInput type="number" (input)="setAmount($event.target.value)" [value]="amount"/>
-              <mat-hint>Amount to convert to UGX</mat-hint>
-            </mat-form-field>
-
-            <mat-form-field
-              fxFlex="48%"
-              *ngIf="converted"
-            >
-              <mat-label>Converted amount</mat-label>
-              <input matInput type="number" [value]="convertedAmount" />
-              <mat-hint>Converted amount in UGX</mat-hint>
-            </mat-form-field>
+              <mat-form-field fxFlex="48%">
+                <mat-label>Converted amount</mat-label>
+                <input 
+                  matInput 
+                  type="number" 
+                  [value]="convertedAmount" 
+                  readonly
+                />
+                <mat-hint>Converted amount in UGX</mat-hint>
+              </mat-form-field>
+            </div>
           </div>
 
           <div

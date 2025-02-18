@@ -92,7 +92,7 @@
 
         .profile-image {
           object-fit: cover;
-          border-radius: 20px;
+          border-radius: 100px;
         }
 
         .signature {
@@ -186,8 +186,7 @@ body.dark-theme {
 
   // Changing the logo color for dark mode
   .img-button,
-  .app-user-photo,
-  .profile-image {
+  .app-user-photo {
     filter: invert(100%);
   }
 

@@ -23,24 +23,10 @@ import { NextStepDialogComponent } from '../../configuration-wizard/next-step-di
   styleUrls: ['./create-journal-entry.component.scss']
 })
 export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
-  converted = false;
   convertedAmount = 0;
   amount = 0;
-  rate =1;
-
-  setRate(rate: number) {
-    this.rate = rate;
-    this.convertedAmount = rate * this.amount;
-  }
-
-  setAmount(amount: number) {
-    this.amount = amount;
-    this.convertedAmount = this.rate * this.amount;
-  }
-
-  changeConverted() {
-    this.converted = !this.converted;
-  }
+  rate = 1;
+  showCurrencyConverter = false;
 
   /** Minimum transaction date allowed. */
   minDate = new Date(2000, 0, 1);
@@ -113,6 +99,18 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.maxDate = this.settingsService.businessDate;
     this.createJournalEntryForm();
+
+    this.journalEntryForm.get('currencyCode').valueChanges
+      .subscribe((value: string) => {
+        if (value === 'UGX') {
+          this.showCurrencyConverter = false;
+          this.journalEntryForm.patchValue({ exchangeRate: 1 });
+          this.journalEntryForm.get('exchangeRate').disable();
+        } else {
+          this.showCurrencyConverter = true;
+          this.journalEntryForm.get('exchangeRate').enable();
+        }
+      });
   }
 
   /**
@@ -135,16 +133,6 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
       'exchangeRate': [1],
       'comments': ['']
     });
-
-    this.journalEntryForm.get('currencyCode').valueChanges
-      .subscribe((value: string) => {
-        if (value === 'UGX') {
-          this.journalEntryForm.patchValue({ exchangeRate: 1 });
-          this.journalEntryForm.get('exchangeRate').disable();
-        } else {
-          this.journalEntryForm.get('exchangeRate').enable();
-        }
-      });
   }
 
   /**
@@ -265,5 +253,16 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
         this.router.navigate(['/home']);
       }
     });
+  }
+
+  setRate(rate: number) {
+    this.rate = rate;
+    this.convertedAmount = rate * this.amount;
+    this.journalEntryForm.patchValue({ exchangeRate: rate });
+  }
+
+  setAmount(amount: number) {
+    this.amount = amount;
+    this.convertedAmount = this.rate * amount;
   }
 }
