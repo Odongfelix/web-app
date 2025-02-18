@@ -67,6 +67,7 @@ import { EditLoanProvisioningCriteriaComponent } from './loan-provisioning-crite
 import { StandingInstructionsHistoryComponent } from './standing-instructions-history/standing-instructions-history.component';
 import { FundMappingComponent } from './fund-mapping/fund-mapping.component';
 import { CreateHolidayComponent } from './holidays/create-holiday/create-holiday.component';
+import { RateConfigurationComponent } from './rate-configuration/rate-configuration.component';
 
 
 /** Custom Service */
@@ -155,7 +156,8 @@ import { InvestorsComponent } from './investors/investors.component';
     CreateFundComponent,
     EditFundComponent,
     ViewFundComponent,
-    InvestorsComponent
+    InvestorsComponent,
+    RateConfigurationComponent
   ],
   providers: [
     CreateHoliday,

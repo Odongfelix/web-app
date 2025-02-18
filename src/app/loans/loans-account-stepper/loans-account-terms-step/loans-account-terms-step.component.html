@@ -25,13 +25,8 @@
 
     <mat-form-field *ngIf="convertable" fxFlex="48%">
       <mat-label>Amount</mat-label>
-      <input
-        matInput
-        matTooltip="Enter the amount to convert to UGX"
-        (input)="setAmount($event.target.value)"
-      />
+      <input matInput matTooltip="Enter the amount to convert to UGX" (input)="setAmount($event.target.value)" />
     </mat-form-field>
-
 
     <h4 fxFlex="98%" class="mat-h4">
       {{ 'labels.heading.Term Options' | translate }}
@@ -69,8 +64,8 @@
       <input type="number" matInput formControlName="fixedLength" />
     </mat-form-field>
     <span fxFlex="20%" *ngIf="hasFixedLength()" class="label-field">{{
-        loansAccountTermsForm.value.loanTermFrequencyType | find: termFrequencyTypeData : 'id' : 'value'
-      }}</span>
+      loansAccountTermsForm.value.loanTermFrequencyType | find: termFrequencyTypeData : 'id' : 'value'
+    }}</span>
 
     <h4 fxFlex="98%" class="mat-h4">Repayments</h4>
 
@@ -287,10 +282,10 @@
 
     <div fxFlex="48%" *ngIf="loanScheduleType">
       <span fxFlex="40%"
-      ><p>{{ 'labels.inputs.Loan Schedule Type' | translate }}</p></span
+        ><p>{{ 'labels.inputs.Loan Schedule Type' | translate }}</p></span
       >
       <span fxFlex="60%"
-      ><p>{{ loanScheduleType.value | translateKey: 'catalogs' }}</p></span
+        ><p>{{ loanScheduleType.value | translateKey: 'catalogs' }}</p></span
       >
     </div>
 
@@ -391,7 +386,7 @@
     <div fxFlexFill fxFlex="48%" *ngIf="isDelinquencyEnabled()">
       <p>
         <span fxFlex="53%"
-        ><b>{{ 'labels.inputs.Delinquency Bucket' | translate }}</b></span
+          ><b>{{ 'labels.inputs.Delinquency Bucket' | translate }}</b></span
         >
         <span fxFlex="48%">{{ loanProduct?.delinquencyBucket.name }}</span>
       </p>
@@ -422,7 +417,7 @@
 
     <div fxFlexFill>
       <span fxFlex="40%"
-      ><b>{{ 'labels.inputs.Recalculate Interest' | translate }}</b></span
+        ><b>{{ 'labels.inputs.Recalculate Interest' | translate }}</b></span
       >
       <span fxFlex="60%">{{ loansAccountTermsData?.isInterestRecalculationEnabled | yesNo }}</span>
     </div>
@@ -448,9 +443,9 @@
       <div fxFlexFill>
         <span fxFlex="40%">{{ 'labels.inputs.Interest recalculation compounding on' | translate }}</span>
         <span fxFlex="60%">{{
-            loansAccountTermsData.interestRecalculationData.interestRecalculationCompoundingType.value
-              | translateKey: 'catalogs'
-          }}</span>
+          loansAccountTermsData.interestRecalculationData.interestRecalculationCompoundingType.value
+            | translateKey: 'catalogs'
+        }}</span>
       </div>
 
       <div fxFlexFill>
@@ -470,7 +465,7 @@
               loansAccountTermsData.interestRecalculationData.recalculationRestFrequencyType.id === 4 &&
               loansAccountTermsData.interestRecalculationData.recalculationRestFrequencyOnDay
             "
-          >on day {{ loansAccountTermsData.interestRecalculationData.recalculationRestFrequencyOnDay }}</span
+            >on day {{ loansAccountTermsData.interestRecalculationData.recalculationRestFrequencyOnDay }}</span
           >
           <span
             *ngIf="
@@ -478,7 +473,7 @@
               !loansAccountTermsData.interestRecalculationData.recalculationRestFrequencyOnDay &&
               loansAccountTermsData.interestRecalculationData.recalculationRestFrequencyNthDay
             "
-          >on
+            >on
             {{ loansAccountTermsData.interestRecalculationData.recalculationRestFrequencyNthDay.value }}
             {{ loansAccountTermsData.interestRecalculationData.recalculationRestFrequencyWeekday.value }}</span
           >
@@ -569,7 +564,7 @@
       <div fxFlexFill>
         <span fxFlex="40%">{{ 'labels.inputs.Frequency for compounding' | translate }}</span>
         <span fxFlex="60%"
-        >{{ loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyType.value }}
+          >{{ loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyType.value }}
           <span
             *ngIf="
               loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyType.id === 3 &&
@@ -583,7 +578,7 @@
               loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyType.id === 4 &&
               loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyOnDay
             "
-          >on day
+            >on day
             {{ loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyOnDay }}
           </span>
           <span
@@ -592,7 +587,7 @@
               !loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyOnDay &&
               loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyNthDay
             "
-          >on
+            >on
             {{ loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyNthDay.value }}
             {{ loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyWeekday.value }}
           </span>
@@ -610,8 +605,8 @@
     >
       <span fxFlex="40%">{{ 'labels.inputs.Frequency Interval for compounding' | translate }}</span>
       <span fxFlex="60%">{{
-          loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyInterval
-        }}</span>
+        loansAccountTermsData.interestRecalculationData.recalculationCompoundingFrequencyInterval
+      }}</span>
     </div>
 
     <mat-divider fxFlex="98%"></mat-divider>

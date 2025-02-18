@@ -136,6 +136,21 @@
               </p>
             </mat-list-item>
           </div>
+
+          <div>
+            <mat-list-item *mifosxHasPermission="'READ_RATE'" [routerLink]="['rates']">
+              <mat-icon matListIcon>
+                <fa-icon icon="percentage" size="sm"></fa-icon>
+              </mat-icon>
+              <h4 matLine>Rate Configuration</h4>
+              <fa-icon (click)="arrowBooleansToggle(11)" *ngIf="!arrowBooleans[11]" icon="arrow-down" size="md">
+              </fa-icon>
+              <fa-icon (click)="arrowBooleansToggle(11)" *ngIf="arrowBooleans[11]" icon="arrow-up" size="md"> </fa-icon>
+              <p matLine *ngIf="arrowBooleans[11]">
+                {{ 'labels.text.Configure system-wide rates' | translate }}
+              </p>
+            </mat-list-item>
+          </div>
         </mat-nav-list>
       </div>
 

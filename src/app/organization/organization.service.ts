@@ -4,6 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 
 /** rxjs Imports */
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 /** Custom Imports. */
 import { SettingsService } from 'app/settings/settings.service';
@@ -809,6 +810,94 @@ export class OrganizationService {
     formData.append('locale', this.settingsService.language.code);
     formData.append('dateFormat', this.settingsService.dateFormat);
     return this.http.post(`${urlSuffix}/uploadtemplate`, formData, { params: httpParams });
+  }
+
+  /**
+   * Creates a new rate configuration
+   * @param rateData Rate configuration data
+   * @returns Observable of the created rate
+   */
+  createRate(rateData: any): Observable<any> {
+    const payload = {
+      ...rateData,
+      locale: this.settingsService.language.code,
+      dateFormat: this.settingsService.dateFormat
+    };
+    return this.http.post('/rates', payload);
+  }
+
+  /**
+   * Gets all rates
+   * @returns Observable of rates
+   */
+  getRates(): Observable<any> {
+    return this.http.get('/rates');
+  }
+
+  /**
+   * Updates a rate's status
+   * @param rateId Rate ID
+   * @param status New status
+   * @returns Observable of the updated rate
+   */
+  updateRateStatus(rateId: string, status: boolean): Observable<any> {
+    const payload = {
+      active: status,
+      locale: this.settingsService.language.code
+    };
+    return this.http.put(`/rates/${rateId}`, payload);
+  }
+
+  /**
+   * Deletes a rate
+   * @param rateId Rate ID
+   * @returns Observable of the operation result
+   */
+  deleteRate(rateId: string): Observable<any> {
+    return this.http.delete(`/rates/${rateId}`);
+  }
+
+  /**
+   * Gets the applicable exchange rate
+   * @param fromCurrency Source currency code
+   * @param toCurrency Target currency code
+   * @returns Observable of the exchange rate
+   */
+  getExchangeRate(fromCurrency: string, toCurrency: string): Observable<any> {
+    const httpParams = new HttpParams()
+      .set('fromCurrency', fromCurrency)
+      .set('toCurrency', toCurrency);
+    return this.http.get('/rates/active', { params: httpParams });
+  }
+
+  /**
+   * Converts an amount between currencies
+   * @param amount Amount to convert
+   * @param fromCurrency Source currency code
+   * @param toCurrency Target currency code
+   * @returns Observable of the converted amount
+   */
+  convertCurrency(amount: number, fromCurrency: string, toCurrency: string): Observable<any> {
+    return this.getRates().pipe(
+      map((rates: any[]) => {
+        // Find the active rate for this currency pair
+        const rate = rates.find(r => 
+          r.active && 
+          r.sourceCurrency === fromCurrency && 
+          r.targetCurrency === toCurrency
+        );
+
+        if (!rate) {
+          throw new Error(`No active rate found for ${fromCurrency} to ${toCurrency}`);
+        }
+
+        // Convert using: target_amount = source_amount * rate_value
+        return {
+          amount: amount * rate.value,
+          rate: rate
+        };
+      })
+    );
   }
 
 }

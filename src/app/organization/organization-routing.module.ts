@@ -59,6 +59,7 @@ import { EditLoanProvisioningCriteriaComponent } from './loan-provisioning-crite
 import { StandingInstructionsHistoryComponent } from './standing-instructions-history/standing-instructions-history.component';
 import { FundMappingComponent } from './fund-mapping/fund-mapping.component';
 import { CreateHolidayComponent } from './holidays/create-holiday/create-holiday.component';
+import { RateConfigurationComponent } from './rate-configuration/rate-configuration.component';
 
 /** Custom Resolvers */
 import { LoanProvisioningCriteriaResolver } from './loan-provisioning-criteria/common-resolvers/loan-provisioning-criteria.resolver';
@@ -683,6 +684,12 @@ const routes: Routes = [
               ]
             }
           ]
+        },
+        {
+          path: 'rates',
+          component: RateConfigurationComponent,
+          data: { title: 'Rate Configuration', breadcrumb: 'Rate Configuration' },
+          resolve: { }
         }
       ]
     }

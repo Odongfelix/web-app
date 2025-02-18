@@ -23,11 +23,6 @@ import { NextStepDialogComponent } from '../../configuration-wizard/next-step-di
   styleUrls: ['./create-journal-entry.component.scss']
 })
 export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
-  convertedAmount = 0;
-  amount = 0;
-  rate = 1;
-  showCurrencyConverter = false;
-
   /** Minimum transaction date allowed. */
   minDate = new Date(2000, 0, 1);
   /** Maximum transaction date allowed. */
@@ -42,8 +37,6 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
   paymentTypeData: any;
   /** Gl Account data. */
   glAccountData: any;
-  /** Exchange rate. */
-  exchangeRate: number = 1;
 
   /* Reference of create journal form */
   @ViewChild('createJournalFormRef') createJournalFormRef: ElementRef<any>;
@@ -99,18 +92,6 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.maxDate = this.settingsService.businessDate;
     this.createJournalEntryForm();
-
-    this.journalEntryForm.get('currencyCode').valueChanges
-      .subscribe((value: string) => {
-        if (value === 'UGX') {
-          this.showCurrencyConverter = false;
-          this.journalEntryForm.patchValue({ exchangeRate: 1 });
-          this.journalEntryForm.get('exchangeRate').disable();
-        } else {
-          this.showCurrencyConverter = true;
-          this.journalEntryForm.get('exchangeRate').enable();
-        }
-      });
   }
 
   /**
@@ -130,7 +111,6 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
       'routingCode': [''],
       'receiptNumber': [''],
       'bankNumber': [''],
-      'exchangeRate': [1],
       'comments': ['']
     });
   }
@@ -174,18 +154,10 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
    */
   submit() {
     const journalEntry = this.journalEntryForm.value;
-    const exchangeRate = this.journalEntryForm.get('exchangeRate').value;
-
+    
     if (journalEntry.transactionDate instanceof Date) {
       journalEntry.transactionDate = this.dateUtils.formatDate(journalEntry.transactionDate, this.settingsService.dateFormat);
     }
-
-    journalEntry.debits.forEach((debit: any) => {
-      debit.amount = debit.amount * exchangeRate;
-    });
-    journalEntry.credits.forEach((credit: any) => {
-      credit.amount = credit.amount * exchangeRate;
-    });
 
     journalEntry.locale = this.settingsService.language.code;
     journalEntry.dateFormat = this.settingsService.dateFormat;
@@ -253,16 +225,5 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
         this.router.navigate(['/home']);
       }
     });
-  }
-
-  setRate(rate: number) {
-    this.rate = rate;
-    this.convertedAmount = rate * this.amount;
-    this.journalEntryForm.patchValue({ exchangeRate: rate });
-  }
-
-  setAmount(amount: number) {
-    this.amount = amount;
-    this.convertedAmount = this.rate * amount;
   }
 }

@@ -1,0 +1,63 @@
+.container {
+  padding: 1%;
+
+  .mat-card {
+    margin-bottom: 2%;
+
+    .mat-card-header {
+      margin-bottom: 1rem;
+
+      .mat-card-title {
+        font-size: 1.5rem;
+        color: rgb(0 0 0 / 87%);
+      }
+    }
+
+    .mat-card-content {
+      margin-top: 1rem;
+
+      .mat-form-field {
+        margin-bottom: 1rem;
+      }
+
+      .status-checkbox {
+        margin-top: 1rem;
+      }
+    }
+
+    .mat-card-actions {
+      margin: 0;
+      padding: 1rem;
+    }
+  }
+
+  .rates-table-card {
+    table {
+      width: 100%;
+
+      .mat-header-cell {
+        font-weight: bold;
+        color: rgb(0 0 0 / 87%);
+      }
+
+      .mat-cell {
+        padding: 0.5rem;
+        color: rgb(0 0 0 / 87%);
+      }
+    }
+
+    .mat-paginator {
+      margin-top: 1rem;
+    }
+  }
+}
+
+.mat-slide-toggle {
+  margin: 0 1rem;
+}
+
+.mat-icon-button {
+  &.mat-warn {
+    color: #f44336;
+  }
+}

@@ -16,56 +16,18 @@
             </mat-error>
           </mat-form-field>
 
-          <div fxLayout="row wrap" fxLayoutGap="2%" fxLayout.lt-md="column">
-            <mat-form-field fxFlex="48%">
-              <mat-label>{{ 'labels.inputs.Currency' | translate }}</mat-label>
-              <mat-select formControlName="currencyCode" required>
-                <mat-option *ngFor="let currency of currencyData" [value]="currency.code">
-                  {{ currency.displayLabel }}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="journalEntryForm.controls.currencyCode.hasError('required')">
-                {{ 'labels.inputs.Currency' | translate }} {{ 'labels.commons.is' | translate }}
-                <strong>{{ 'labels.commons.required' | translate }}</strong>
-              </mat-error>
-            </mat-form-field>
-
-            <div fxLayout="row wrap" fxLayoutGap="2%" fxLayout.lt-md="column" *ngIf="showCurrencyConverter">
-              <mat-form-field fxFlex="48%">
-                <mat-label>Exchange rate</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  (input)="setRate($event.target.value)" 
-                  [value]="rate"
-                  required
-                />
-                <mat-hint>Exchange rate to UGX</mat-hint>
-              </mat-form-field>
-
-              <mat-form-field fxFlex="48%">
-                <mat-label>Amount</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  (input)="setAmount($event.target.value)" 
-                  [value]="amount"
-                />
-                <mat-hint>Amount to convert to UGX</mat-hint>
-              </mat-form-field>
-
-              <mat-form-field fxFlex="48%">
-                <mat-label>Converted amount</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [value]="convertedAmount" 
-                  readonly
-                />
-                <mat-hint>Converted amount in UGX</mat-hint>
-              </mat-form-field>
-            </div>
-          </div>
+          <mat-form-field fxFlex="48%">
+            <mat-label>{{ 'labels.inputs.Currency' | translate }}</mat-label>
+            <mat-select formControlName="currencyCode" required>
+              <mat-option *ngFor="let currency of currencyData" [value]="currency.code">
+                {{ currency.displayLabel }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="journalEntryForm.controls.currencyCode.hasError('required')">
+              {{ 'labels.inputs.Currency' | translate }} {{ 'labels.commons.is' | translate }}
+              <strong>{{ 'labels.commons.required' | translate }}</strong>
+            </mat-error>
+          </mat-form-field>
 
           <div
             fxFlexFill
@@ -212,8 +174,13 @@
 
           <mat-form-field fxFlex="98%">
             <mat-label>{{ 'labels.inputs.Comments' | translate }}</mat-label>
-            <textarea required matInput formControlName="comments" cdkTextareaAutosize
-                      cdkAutosizeMinRows="2"></textarea>
+            <textarea
+              required
+              matInput
+              formControlName="comments"
+              cdkTextareaAutosize
+              cdkAutosizeMinRows="2"
+            ></textarea>
           </mat-form-field>
         </div>
       </mat-card-content>
@@ -240,8 +207,8 @@
   <p class="mw300">
     {{ 'labels.text.Red asterisk field' | translate }}
     <a href="https://mifosforge.jira.com/wiki/spaces/docs/pages/67895310/Add+Journal+Entries" target="_blank">{{
-        'labels.inputs.Add Journal Entries' | translate
-      }}</a>
+      'labels.inputs.Add Journal Entries' | translate
+    }}</a>
   </p>
   <div fxLayout="row" fxLayoutAlign="end" fxLayoutGap="2%" fxLayout.lt-md="column">
     <button mat-raised-button color="warn" (click)="popover.close(); configurationWizardService.closeConfigWizard()">

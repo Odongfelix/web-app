@@ -41,8 +41,21 @@ export class OrganizationComponent implements AfterViewInit {
   @ViewChild('manageFunds') manageFunds: ElementRef<any>;
   /* Template for popover on manage funds */
   @ViewChild('templateManageFunds') templateManageFunds: TemplateRef<any>;
-  // Initialize an array of 18 boolean values, all set to false
-  arrowBooleans: boolean[] = new Array(18).fill(false);
+  /** Array of booleans to toggle arrow directions for different sections */
+  arrowBooleans: boolean[] = [
+    false, // 0
+    false, // 1
+    false, // 2
+    false, // 3
+    false, // 4
+    false, // 5
+    false, // 6
+    false, // 7
+    false, // 8
+    false, // 9
+    false, // 10
+    false  // 11 - Rate Configuration
+  ];
 
   /**
    * @param {ActivatedRoute} activatedRoute ActivatedRoute.
