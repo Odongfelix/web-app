@@ -20,7 +20,8 @@ export class OrganizationService {
   /**
    * @param {HttpClient} http Http Client to send requests.
    */
-  constructor(private http: HttpClient, private settingsService: SettingsService) { }
+  constructor(private http: HttpClient, private settingsService: SettingsService) {
+  }
 
   /**
    * @returns {Observable<any>} Loan Provisioning Criteria data
@@ -491,7 +492,7 @@ export class OrganizationService {
   /**
    * @returns {Observable<any>} Payment Types data
    */
-   getPaymentTypesWithCode(): Observable<any> {
+  getPaymentTypesWithCode(): Observable<any> {
     return this.http.get('/paymenttypes?onlyWithCode=true');
   }
 
@@ -780,7 +781,11 @@ export class OrganizationService {
     if (legalFormType.length) {
       httpParams = httpParams.set('legalFormType', legalFormType);
     }
-    return this.http.get(`${urlSuffix}/downloadtemplate`, { params: httpParams, responseType: 'arraybuffer', observe: 'response' });
+    return this.http.get(`${urlSuffix}/downloadtemplate`, {
+      params: httpParams,
+      responseType: 'arraybuffer',
+      observe: 'response'
+    });
   }
 
   /**
@@ -791,7 +796,11 @@ export class OrganizationService {
     const httpParams = new HttpParams()
       .set('importDocumentId', id)
       .set('tenantIdentifier', 'default');
-    return this.http.get('/imports/downloadOutputTemplate', { params: httpParams, responseType: 'arraybuffer', observe: 'response' });
+    return this.http.get('/imports/downloadOutputTemplate', {
+      params: httpParams,
+      responseType: 'arraybuffer',
+      observe: 'response'
+    });
   }
 
   /**
@@ -812,6 +821,20 @@ export class OrganizationService {
     return this.http.post(`${urlSuffix}/uploadtemplate`, formData, { params: httpParams });
   }
 
+  convertDateFormat(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+      const day = String(date.getDate()).padStart(2, '0');
+
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.error('Invalid date format:', error);
+      return '1970-01-01'; // Or handle the error as you see fit (e.g., throw an exception)
+    }
+  }
+
   /**
    * Creates a new rate configuration
    * @param rateData Rate configuration data
@@ -819,11 +842,13 @@ export class OrganizationService {
    */
   createRate(rateData: any): Observable<any> {
     const payload = {
-      ...rateData,
-      locale: this.settingsService.language.code,
-      dateFormat: this.settingsService.dateFormat
+      name: rateData.name,
+      rate: rateData.value,
+      base: rateData.sourceCurrency,
+      sub: rateData.targetCurrency,
+      date: this.convertDateFormat(rateData.effectiveDate)
     };
-    return this.http.post('/exchange/rates/post', payload);
+    return this.http.post('/exchange', payload);
   }
 
   /**

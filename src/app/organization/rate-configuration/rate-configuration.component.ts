@@ -82,7 +82,7 @@ export class RateConfigurationComponent implements OnInit {
   private updateRateName() {
     const sourceCurrency = this.rateConfigurationForm.get('sourceCurrency').value;
     const targetCurrency = this.rateConfigurationForm.get('targetCurrency').value;
-    
+
     if (sourceCurrency && targetCurrency) {
       const rateName = `${sourceCurrency}_${targetCurrency}_RATE`;
       this.rateConfigurationForm.patchValue({
@@ -116,7 +116,7 @@ export class RateConfigurationComponent implements OnInit {
   addRate() {
     if (this.rateConfigurationForm.valid) {
       const formData = this.rateConfigurationForm.value;
-      
+
       // Format the data for the API
       const rateData = {
         ...formData,
@@ -126,6 +126,7 @@ export class RateConfigurationComponent implements OnInit {
       this.organizationService.createRate(rateData)
         .subscribe((response: any) => {
           // Handle success
+          console.log(response);
           this.getRates(); // Refresh the rates list
           this.rateConfigurationForm.reset();
           this.rateConfigurationForm.patchValue({
@@ -172,7 +173,7 @@ export class RateConfigurationComponent implements OnInit {
   submit() {
     const rateConfiguration = this.rateConfigurationForm.value;
     const effectiveDate = this.rateConfigurationForm.get('effectiveDate').value;
-    
+
     if (effectiveDate instanceof Date) {
       rateConfiguration.effectiveDate = this.dateUtils.formatDate(effectiveDate, this.settingsService.dateFormat);
     }
@@ -181,4 +182,4 @@ export class RateConfigurationComponent implements OnInit {
     console.log('Rate Configuration:', rateConfiguration);
   }
 
-} 
+}
