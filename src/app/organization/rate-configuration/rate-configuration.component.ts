@@ -126,7 +126,6 @@ export class RateConfigurationComponent implements OnInit {
       this.organizationService.createRate(rateData)
         .subscribe((response: any) => {
           // Handle success
-          console.log(response);
           this.getRates(); // Refresh the rates list
           this.rateConfigurationForm.reset();
           this.rateConfigurationForm.patchValue({
