@@ -823,7 +823,7 @@ export class OrganizationService {
       locale: this.settingsService.language.code,
       dateFormat: this.settingsService.dateFormat
     };
-    return this.http.post('/rates', payload);
+    return this.http.post('/exchange/rates/post', payload);
   }
 
   /**
@@ -881,9 +881,9 @@ export class OrganizationService {
     return this.getRates().pipe(
       map((rates: any[]) => {
         // Find the active rate for this currency pair
-        const rate = rates.find(r => 
-          r.active && 
-          r.sourceCurrency === fromCurrency && 
+        const rate = rates.find(r =>
+          r.active &&
+          r.sourceCurrency === fromCurrency &&
           r.targetCurrency === toCurrency
         );
 
