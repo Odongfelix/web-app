@@ -856,7 +856,7 @@ export class OrganizationService {
    * @returns Observable of rates
    */
   getRates(): Observable<any> {
-    return this.http.get('/rates');
+    return this.http.get('/exchange');
   }
 
   /**

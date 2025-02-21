@@ -24,7 +24,7 @@ export class RateConfigurationComponent implements OnInit {
   /** Rate Configuration form. */
   rateConfigurationForm: UntypedFormGroup;
   /** Rate Configuration data. */
-  rateConfigurationData: any = [];
+  rates: any[] = [];
   /** Columns to be displayed in rates table. */
   displayedColumns: string[] = ['name', 'sourceCurrency', 'targetCurrency', 'value', 'effectiveDate', 'active', 'actions'];
   /** Data source for rates table. */
@@ -57,6 +57,9 @@ export class RateConfigurationComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.dataSource = new MatTableDataSource(this.rates);
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
     this.maxDate = this.settingsService.businessDate;
     this.loadCurrencies();
     this.getRates();
@@ -104,10 +107,14 @@ export class RateConfigurationComponent implements OnInit {
    * Gets all rate configurations.
    */
   getRates() {
-    // TODO: Implement API call to get rates
-    this.dataSource = new MatTableDataSource(this.rateConfigurationData);
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    // this.dataSource = new MatTableDataSource(this.rates);
+    // this.dataSource.paginator = this.paginator;
+    // this.dataSource.sort = this.sort;
+    this.organizationService.getRates().subscribe((response: any) => {
+      console.log(response);
+      this.rates = response;
+      this.dataSource.data = this.rates;
+    });
   }
 
   /**
@@ -127,11 +134,6 @@ export class RateConfigurationComponent implements OnInit {
         .subscribe((response: any) => {
           // Handle success
           this.getRates(); // Refresh the rates list
-          this.rateConfigurationForm.reset();
-          this.rateConfigurationForm.patchValue({
-            targetCurrency: 'UGX',
-            active: true
-          });
         });
     }
   }
@@ -142,8 +144,8 @@ export class RateConfigurationComponent implements OnInit {
    */
   deleteRate(rate: any) {
     // TODO: Implement API call to delete rate
-    this.rateConfigurationData.splice(this.rateConfigurationData.indexOf(rate), 1);
-    this.dataSource.connect().next(this.rateConfigurationData);
+    this.rates.splice(this.rates.indexOf(rate), 1);
+    this.dataSource.connect().next(this.rates);
   }
 
   /**

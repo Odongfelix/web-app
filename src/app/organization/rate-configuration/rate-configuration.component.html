@@ -75,7 +75,7 @@
           </mat-form-field>
 
           <div fxFlex="32%" fxLayoutAlign="start center">
-            <mat-checkbox formControlName="active" class="status-checkbox"> Active </mat-checkbox>
+            <mat-checkbox formControlName="active" class="status-checkbox"> Active</mat-checkbox>
           </div>
         </div>
       </mat-card-content>
@@ -104,29 +104,29 @@
 
         <ng-container matColumnDef="sourceCurrency">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Source Currency</th>
-          <td mat-cell *matCellDef="let rate">{{ rate.sourceCurrency }}</td>
+          <td mat-cell *matCellDef="let rate">{{ rate.base }}</td>
         </ng-container>
 
         <ng-container matColumnDef="targetCurrency">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Target Currency</th>
-          <td mat-cell *matCellDef="let rate">{{ rate.targetCurrency }}</td>
+          <td mat-cell *matCellDef="let rate">{{ rate.sub }}</td>
         </ng-container>
 
         <ng-container matColumnDef="value">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Rate Value</th>
-          <td mat-cell *matCellDef="let rate">{{ rate.value }}</td>
+          <td mat-cell *matCellDef="let rate">{{ rate.rate }}</td>
         </ng-container>
 
         <ng-container matColumnDef="effectiveDate">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Effective Date</th>
-          <td mat-cell *matCellDef="let rate">{{ rate.effectiveDate | date }}</td>
+          <td mat-cell *matCellDef="let rate">{{ rate.date | date }}</td>
         </ng-container>
 
         <ng-container matColumnDef="active">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
           <td mat-cell *matCellDef="let rate">
-            <mat-slide-toggle [checked]="rate.active" (change)="toggleRateStatus(rate)">
-              {{ rate.active ? 'Active' : 'Inactive' }}
+            <mat-slide-toggle [checked]="true">
+              {{ 'Active' }}
             </mat-slide-toggle>
           </td>
         </ng-container>
