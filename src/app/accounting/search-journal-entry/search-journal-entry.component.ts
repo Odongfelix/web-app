@@ -114,6 +114,10 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
     {
       type: 'locale',
       value: this.settingsService.language.code
+    },
+    {
+      type: 'currency',
+      value: ''
     }
   ];
 
@@ -121,6 +125,15 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   /** Sorter for journal entries table. */
   @ViewChild(MatSort, { static: true }) sort: MatSort;
+
+  /** Currency filter form control */
+  currencyFilter = new UntypedFormControl('');
+  /** Currency data */
+  currencyData: any[] = [];
+  /** Filter data object */
+  filterData: any = {
+    currency: ''
+  };
 
   /**
    * Retrieves the offices and gl accounts data from `resolve`.
@@ -148,6 +161,32 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
     this.maxDate = this.settingsService.businessDate;
     this.setFilteredOffices();
     this.setFilteredGlAccounts();
+    
+    // Get currencies with logging
+    this.accountingService.getCurrencies().subscribe(
+      (response: any) => {
+        console.log('Currencies from backend:', response);
+        // Extract currencies from the selectedCurrencyOptions
+        this.currencyData = response.selectedCurrencyOptions || [];
+        console.log('Formatted currency data:', this.currencyData);
+      },
+      error => {
+        console.error('Error fetching currencies:', error);
+      }
+    );
+
+    // Add subscription for currency changes
+    this.currencyFilter.valueChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        tap((filterValue) => {
+          console.log('Currency changed to:', filterValue);
+          this.applyFilter(filterValue, 'currency');
+        })
+      )
+      .subscribe();
+
     this.getJournalEntries();
   }
 
@@ -256,7 +295,21 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
   applyFilter(filterValue: string, property: string) {
     this.paginator.pageIndex = 0;
     const findIndex = this.filterJournalEntriesBy.findIndex(filter => filter.type === property);
-    this.filterJournalEntriesBy[findIndex].value = filterValue;
+    
+    if (findIndex === -1) {
+      this.filterJournalEntriesBy.push({
+        type: property,
+        value: filterValue
+      });
+    } else {
+      this.filterJournalEntriesBy[findIndex].value = filterValue;
+    }
+    
+    // For debugging
+    console.log('Applied filter:', property, filterValue);
+    console.log('Current filters:', this.filterJournalEntriesBy);
+    
+    // Reset the table data and load with new filter
     this.loadJournalEntriesPage();
   }
 

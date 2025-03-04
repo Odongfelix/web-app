@@ -44,7 +44,8 @@ export class AccountingService {
    * @returns {Observable<any>} Currencies data.
    */
   getCurrencies(): Observable<any> {
-    return this.http.get('/currencies');
+    const httpParams = new HttpParams().set('fields', 'selectedCurrencyOptions');
+    return this.http.get('/currencies', { params: httpParams });
   }
 
   /**
@@ -98,12 +99,18 @@ export class AccountingService {
       .set('limit', limit.toString())
       .set('sortOrder', sortOrder)
       .set('orderBy', orderBy);
-    // filterBy: officeId, glAccountId, manualEntriesOnly, fromDate, toDate, transactionId
+    
+    // filterBy: officeId, glAccountId, manualEntriesOnly, fromDate, toDate, transactionId, currency
     filterBy.forEach(function (filter: any) {
       if (filter.value) {
-        httpParams = httpParams.set(filter.type, filter.value);
+        if (filter.type === 'currency') {
+          httpParams = httpParams.set('currencyCode', filter.value);
+        } else {
+          httpParams = httpParams.set(filter.type, filter.value);
+        }
       }
     });
+    
     return this.http.get('/journalentries', { params: httpParams });
   }
 
