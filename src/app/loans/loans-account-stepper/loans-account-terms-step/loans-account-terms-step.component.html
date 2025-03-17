@@ -10,23 +10,7 @@
     >
     </mifosx-input-amount>
 
-    <mat-checkbox (input)="changeConverter()">
-      <mat-label>Convert currency</mat-label>
-    </mat-checkbox>
 
-    <mat-form-field *ngIf="convertable" fxFlex="48%">
-      <mat-label>Exchange rate</mat-label>
-      <input
-        matInput
-        matTooltip="Enter the exchange rate from this currency to UGX"
-        (input)="setExchangeRate($event.target.value)"
-      />
-    </mat-form-field>
-
-    <mat-form-field *ngIf="convertable" fxFlex="48%">
-      <mat-label>Amount</mat-label>
-      <input matInput matTooltip="Enter the amount to convert to UGX" (input)="setAmount($event.target.value)" />
-    </mat-form-field>
 
     <h4 fxFlex="98%" class="mat-h4">
       {{ 'labels.heading.Term Options' | translate }}

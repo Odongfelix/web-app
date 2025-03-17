@@ -160,6 +160,27 @@ export class MigrateOpeningBalancesComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * Checks if all amounts are valid.
+   */
+  amountsAreOK(): boolean {
+    // Add null check for glAccountEntries
+    const entries = this.openingBalancesForm.value.glAccountEntries || [];
+    let creditsSum = 0;
+    let debitsSum = 0;
+    
+    entries.forEach((entry: any) => {
+      if (entry.credit) {
+        creditsSum += parseFloat(entry.credit);
+      }
+      if (entry.debit) {
+        debitsSum += parseFloat(entry.debit);
+      }
+    });
+
+    return creditsSum === debitsSum;
+  }
+
+  /**
    * Submits the opening balances form and defines opening balances,
    * if successful redirects to view created transaction.
    */
@@ -168,14 +189,19 @@ export class MigrateOpeningBalancesComponent implements OnInit, AfterViewInit {
       const openingBalances = this.openingBalancesForm.value;
       openingBalances.locale = this.settingsService.language.code;
       openingBalances.dateFormat = this.settingsService.dateFormat;
+      
       if (openingBalances.transactionDate instanceof Date) {
         openingBalances.transactionDate = this.dateUtils.formatDate(openingBalances.transactionDate, this.settingsService.dateFormat);
       }
+      
+      // Initialize arrays even if no entries exist
       openingBalances.debits = [];
       openingBalances.credits = [];
-      const exchangeRate = this.openingBalancesForm.get('exchangeRate').value;
+      const exchangeRate = this.openingBalancesForm.get('exchangeRate')?.value || 1;
 
-      this.openingBalancesForm.value.glAccountEntries.forEach((entry: any) => {
+      // Add null check for glAccountEntries
+      const entries = openingBalances.glAccountEntries || [];
+      entries.forEach((entry: any) => {
         if (entry.debit) {
           openingBalances.debits.push({
             glAccountId: entry.glAccountId,
@@ -189,7 +215,9 @@ export class MigrateOpeningBalancesComponent implements OnInit, AfterViewInit {
           });
         }
       });
+
       delete openingBalances.glAccountEntries;
+      
       this.accountingService.defineOpeningBalances(openingBalances).subscribe((response: any) => {
         this.router.navigate(['/accounting/journal-entries/transactions/view', response.transactionId]);
       });
@@ -232,20 +260,6 @@ export class MigrateOpeningBalancesComponent implements OnInit, AfterViewInit {
    */
   previousStep() {
     this.router.navigate(['/accounting']);
-  }
-
-  amountsAreOK(): boolean {
-    let debitsSum = 0;
-    let creditsSum = 0;
-    this.openingBalancesForm.value.glAccountEntries.forEach((entry: any) => {
-      if (entry.debit) {
-        debitsSum = debitsSum + entry.debit;
-      }
-      if (entry.credit) {
-        creditsSum = creditsSum + entry.credit;
-      }
-    });
-    return (debitsSum > 0 && debitsSum === creditsSum);
   }
 
   glAccountTypeLabel(accountType: string): string {

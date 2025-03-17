@@ -111,8 +111,6 @@ export class LoanProductSettingsStepComponent implements OnInit {
       'principalThresholdForLastInstallment': this.loanProductsTemplate.principalThresholdForLastInstallment,
       'allowVariableInstallments': this.loanProductsTemplate.allowVariableInstallments,
       'disallowExpectedDisbursements': this.loanProductsTemplate.disallowExpectedDisbursements,
-      'minimumGap': this.loanProductsTemplate.minimumGap,
-      'maximumGap': this.loanProductsTemplate.maximumGap,
       'canUseForTopup': this.loanProductsTemplate.canUseForTopup,
       'isInterestRecalculationEnabled': this.loanProductsTemplate.isInterestRecalculationEnabled,
       'holdGuaranteeFunds': this.loanProductsTemplate.holdGuaranteeFunds,
@@ -123,7 +121,7 @@ export class LoanProductSettingsStepComponent implements OnInit {
       'enableInstallmentLevelDelinquency': this.loanProductsTemplate.enableInstallmentLevelDelinquency,
       'loanScheduleType': this.loanProductsTemplate.loanScheduleType.code,
       'useDueForRepaymentsConfigurations': this.loanProductsTemplate.useDueForRepaymentsConfigurations,
-      'allowAccrualPostingInArrears': this.loanProductsTemplate.allowAccrualPostingInArrears,
+      // 'allowAccrualPostingInArrears': this.loanProductsTemplate.allowAccrualPostingInArrears,
       'chargeOffBehaviour': this.loanProductsTemplate.chargeOffBehaviour.id
     });
 
@@ -257,8 +255,44 @@ export class LoanProductSettingsStepComponent implements OnInit {
       'dueDaysForRepaymentEvent': [''],
       'overDueDaysForRepaymentEvent': [''],
       'loanScheduleType': [LoanProducts.LOAN_SCHEDULE_TYPE_CUMULATIVE, Validators.required],
-      'allowAccrualPostingInArrears': [false]
+      // 'allowAccrualPostingInArrears': [false]
     });
+
+    if (this.toEdit) {
+      this.loanProductSettingsForm.patchValue({
+        'amortizationType': this.loanProductsTemplate.amortizationType.id,
+        'interestType': this.loanProductsTemplate.interestType.id,
+        'isEqualAmortization': this.loanProductsTemplate.isEqualAmortization,
+        'interestCalculationPeriodType': this.loanProductsTemplate.interestCalculationPeriodType.id,
+        'allowPartialPeriodInterestCalcualtion': this.loanProductsTemplate.allowPartialPeriodInterestCalcualtion,
+        'transactionProcessingStrategyCode': this.loanProductsTemplate.transactionProcessingStrategyCode || this.transactionProcessingStrategyData[0].code,
+        'graceOnPrincipalPayment': this.loanProductsTemplate.graceOnPrincipalPayment,
+        'graceOnInterestPayment': this.loanProductsTemplate.graceOnInterestPayment,
+        'graceOnInterestCharged': this.loanProductsTemplate.graceOnInterestCharged,
+        'inArrearsTolerance': this.loanProductsTemplate.inArrearsTolerance,
+        'daysInYearType': this.loanProductsTemplate.daysInYearType.id,
+        'daysInMonthType': this.loanProductsTemplate.daysInMonthType.id,
+        'canDefineInstallmentAmount': this.loanProductsTemplate.canDefineInstallmentAmount,
+        'graceOnArrearsAgeing': this.loanProductsTemplate.graceOnArrearsAgeing,
+        'overdueDaysForNPA': this.loanProductsTemplate.overdueDaysForNPA,
+        'accountMovesOutOfNPAOnlyOnArrearsCompletion': this.loanProductsTemplate.accountMovesOutOfNPAOnlyOnArrearsCompletion,
+        'principalThresholdForLastInstallment': this.loanProductsTemplate.principalThresholdForLastInstallment,
+        'allowVariableInstallments': this.loanProductsTemplate.allowVariableInstallments,
+        'disallowExpectedDisbursements': this.loanProductsTemplate.disallowExpectedDisbursements,
+        'canUseForTopup': this.loanProductsTemplate.canUseForTopup,
+        'isInterestRecalculationEnabled': this.loanProductsTemplate.isInterestRecalculationEnabled,
+        'holdGuaranteeFunds': this.loanProductsTemplate.holdGuaranteeFunds,
+        'multiDisburseLoan': this.loanProductsTemplate.multiDisburseLoan,
+        'maxTrancheCount': this.loanProductsTemplate.maxTrancheCount,
+        'outstandingLoanBalance': this.loanProductsTemplate.outstandingLoanBalance,
+        'enableDownPayment': this.loanProductsTemplate.enableDownPayment,
+        'enableInstallmentLevelDelinquency': this.loanProductsTemplate.enableInstallmentLevelDelinquency,
+        'loanScheduleType': this.loanProductsTemplate.loanScheduleType.code,
+        'useDueForRepaymentsConfigurations': this.loanProductsTemplate.useDueForRepaymentsConfigurations,
+        // 'allowAccrualPostingInArrears': this.loanProductsTemplate.allowAccrualPostingInArrears,
+        'chargeOffBehaviour': this.loanProductsTemplate.chargeOffBehaviour.id
+      });
+    }
   }
 
   setConditionalControls() {
@@ -528,7 +562,7 @@ export class LoanProductSettingsStepComponent implements OnInit {
       this.loanProductSettingsForm.patchValue({
         'rescheduleStrategyMethod': this.rescheduleStrategyTypeData[0].id
       });
-      this.rescheduleStrategyTypeDisabled = true;
+      this.rescheduleStrategyTypeDisabled = false;
     } else {
       this.rescheduleStrategyTypeData = this.rescheduleStrategyTypeDataBase.filter(
         (o: OptionData) => o.id < 4
