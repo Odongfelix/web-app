@@ -162,15 +162,21 @@ export class EditLoanProductComponent implements OnInit {
       ...this.loanProductChargesStep.loanProductCharges,
       ...this.loanProductAccountingStep.loanProductAccounting
     };
+
     // Default empty array
     loanProduct['paymentAllocation'] = [];
     loanProduct['creditAllocation'] = [];
     loanProduct['supportedInterestRefundTypes'] = [];
+
     if (this.isAdvancedPaymentStrategy) {
       loanProduct['paymentAllocation'] = this.paymentAllocation;
       loanProduct['creditAllocation'] = this.creditAllocation;
       loanProduct['supportedInterestRefundTypes'] = this.supportedInterestRefundTypes;
     }
+
+    // Remove unsupported parameter
+    delete loanProduct.chargeOffReasonToExpenseAccountMappings;
+
     return loanProduct;
   }
 
