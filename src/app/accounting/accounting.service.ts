@@ -18,14 +18,15 @@ export class AccountingService {
   /**
    * @param {HttpClient} http Http Client to send requests.
    */
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+  }
 
   /**
    * @returns {Observable<any>} Offices data ordered by id.
    */
   getOffices(): Observable<any> {
     const httpParams = new HttpParams().set('orderBy', 'id');
-    return  this.http.get('/offices', { params: httpParams });
+    return this.http.get('/offices', { params: httpParams });
   }
 
   /**
@@ -99,18 +100,14 @@ export class AccountingService {
       .set('limit', limit.toString())
       .set('sortOrder', sortOrder)
       .set('orderBy', orderBy);
-    
+
     // filterBy: officeId, glAccountId, manualEntriesOnly, fromDate, toDate, transactionId, currency
-    filterBy.forEach(function (filter: any) {
+    filterBy.forEach(function(filter: any) {
       if (filter.value) {
-        if (filter.type === 'currency') {
-          httpParams = httpParams.set('currencyCode', filter.value);
-        } else {
-          httpParams = httpParams.set(filter.type, filter.value);
-        }
+        httpParams = httpParams.set(filter.type, filter.value);
       }
     });
-    
+
     return this.http.get('/journalentries', { params: httpParams });
   }
 

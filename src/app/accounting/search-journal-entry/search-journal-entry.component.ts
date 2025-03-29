@@ -7,7 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 
 /** rxjs Imports */
 import { merge } from 'rxjs';
-import { tap, startWith, map, distinctUntilChanged, debounceTime} from 'rxjs/operators';
+import { tap, startWith, map, distinctUntilChanged, debounceTime } from 'rxjs/operators';
 
 /** Custom Services */
 import { AccountingService } from '../accounting.service';
@@ -146,12 +146,12 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
               private dateUtils: Dates,
               private route: ActivatedRoute) {
     this.route.data.subscribe((data: {
-        offices: any,
-        glAccounts: any
-      }) => {
-        this.officeData = data.offices;
-        this.glAccountData = data.glAccounts;
-      });
+      offices: any,
+      glAccounts: any
+    }) => {
+      this.officeData = data.offices;
+      this.glAccountData = data.glAccounts;
+    });
   }
 
   /**
@@ -161,7 +161,7 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
     this.maxDate = this.settingsService.businessDate;
     this.setFilteredOffices();
     this.setFilteredGlAccounts();
-    
+
     // Get currencies with logging
     this.accountingService.getCurrencies().subscribe(
       (response: any) => {
@@ -248,7 +248,7 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
       )
       .subscribe();
 
-      this.submittedOnDateFrom.valueChanges
+    this.submittedOnDateFrom.valueChanges
       .pipe(
         debounceTime(500),
         distinctUntilChanged(),
@@ -264,6 +264,17 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
         distinctUntilChanged(),
         tap((filterValue) => {
           this.applyFilter(this.dateUtils.formatDate(filterValue, this.settingsService.dateFormat), 'submittedOnDateTo');
+        })
+      )
+      .subscribe();
+
+    this.currencyFilter.valueChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        tap((filterValue) => {
+          console.log('felix', filterValue);
+          this.applyFilter(filterValue, 'currency');
         })
       )
       .subscribe();
@@ -295,7 +306,7 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
   applyFilter(filterValue: string, property: string) {
     this.paginator.pageIndex = 0;
     const findIndex = this.filterJournalEntriesBy.findIndex(filter => filter.type === property);
-    
+
     if (findIndex === -1) {
       this.filterJournalEntriesBy.push({
         type: property,
@@ -304,11 +315,11 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
     } else {
       this.filterJournalEntriesBy[findIndex].value = filterValue;
     }
-    
+
     // For debugging
     console.log('Applied filter:', property, filterValue);
     console.log('Current filters:', this.filterJournalEntriesBy);
-    
+
     // Reset the table data and load with new filter
     this.loadJournalEntriesPage();
   }
