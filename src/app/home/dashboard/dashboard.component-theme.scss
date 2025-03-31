@@ -3,35 +3,356 @@
 
 @mixin dashboard-component-theme($theme) {
   $primary: map.get($theme, primary);
+  $accent: map.get($theme, accent);
+  $warn: map.get($theme, warn);
+  $background: map.get($theme, background);
+  $foreground: map.get($theme, foreground);
+  $is-dark: map.get($theme, is-dark);
 
   mifosx-dashboard {
-    .recent-activities,
-    .frequent-activities {
-      .header {
-        background-color: mat.get-color-from-palette($primary, 500);
-        color: mat.get-contrast-color-from-palette($primary, 500);
+    .search-card,
+    .filter-card {
+      background-color: if($is-dark, 
+        mat.get-color-from-palette($background, card), 
+        mat.get-color-from-palette($background, card)
+      );
+      border: if($is-dark, 1px solid rgba(255, 255, 255, 0.1), none);
+    }
+
+    .currency-select {
+      .mat-select-value,
+      .mat-select-arrow {
+        color: mat.get-color-from-palette($foreground, text);
+      }
+
+      &.mat-select:focus:not(.mat-select-disabled) .mat-select-arrow {
+        color: mat.get-color-from-palette($primary);
       }
     }
 
-    mifosx-amount-collected-pie,
-    mifosx-amount-disbursed-pie,
-    mifosx-client-trends-bar {
-      .card {
-        .header {
-          background-color: mat.get-color-from-palette($primary, 500);
-          color: mat.get-contrast-color-from-palette($primary, 500);
+    .summary-cards {
+      .summary-card {
+        background-color: if($is-dark, 
+          mat.get-color-from-palette($background, card), 
+          mat.get-color-from-palette($background, card)
+        );
+        border: if($is-dark, 1px solid rgba(255, 255, 255, 0.1), none);
+        box-shadow: if($is-dark, 
+          0 2px 8px rgba(0, 0, 0, 0.4), 
+          0 2px 4px rgba(0, 0, 0, 0.1)
+        );
 
-          mat-label,
-          .mat-select-value,
-          .mat-select-arrow {
-            color: mat.get-contrast-color-from-palette($primary, 500);
+        .card-header {
+          color: mat.get-color-from-palette($foreground, text);
+        }
+
+        .stat-value {
+          color: if($is-dark, 
+            mat.get-color-from-palette($foreground, text), 
+            mat.get-color-from-palette($foreground, text)
+          );
+        }
+
+        .stat-icon {
+          &.clients { 
+            background: if($is-dark,
+              rgba(mat.get-color-from-palette($primary), 0.15),
+              rgba(mat.get-color-from-palette($primary), 0.1)
+            );
+            color: mat.get-color-from-palette($primary);
           }
-
-          .mat-form-field-underline,
-          .mat-form-field-ripple {
-            background-color: mat.get-contrast-color-from-palette($primary, 500);
+          &.active-clients { 
+            background: if($is-dark,
+              rgba(mat.get-color-from-palette($accent), 0.15),
+              rgba(mat.get-color-from-palette($accent), 0.1)
+            );
+            color: mat.get-color-from-palette($accent);
+          }
+          &.loans { 
+            background: if($is-dark,
+              rgba(mat.get-color-from-palette($primary), 0.15),
+              rgba(mat.get-color-from-palette($primary), 0.1)
+            );
+            color: mat.get-color-from-palette($primary);
+          }
+          &.collections { 
+            background: if($is-dark,
+              rgba(mat.get-color-from-palette($accent), 0.15),
+              rgba(mat.get-color-from-palette($accent), 0.1)
+            );
+            color: mat.get-color-from-palette($accent);
           }
         }
+
+        .trend {
+          &.positive {
+            color: if($is-dark, #4caf50, #2e7d32);
+          }
+          &.negative {
+            color: if($is-dark, #f44336, #c62828);
+          }
+        }
+      }
+    }
+
+    .trends-card,
+    .disbursed-card,
+    .collected-card {
+      background-color: if($is-dark, 
+        mat.get-color-from-palette($background, card), 
+        mat.get-color-from-palette($background, card)
+      );
+      border: if($is-dark, 1px solid rgba(255, 255, 255, 0.1), none);
+      box-shadow: if($is-dark, 
+        0 2px 8px rgba(0, 0, 0, 0.4), 
+        0 2px 4px rgba(0, 0, 0, 0.1)
+      );
+      
+      .header {
+        background-color: if($is-dark,
+          darken(mat.get-color-from-palette($primary), 15%),
+          mat.get-color-from-palette($primary)
+        );
+        color: mat.get-contrast-color-from-palette($primary, default);
+        padding: 1rem;
+        border-radius: 12px 12px 0 0;
+
+        h3 {
+          margin: 0;
+          display: flex;
+          align-items: center;
+        }
+
+        mat-form-field {
+          margin-top: 0.5rem;
+        }
+
+        .mat-select-value,
+        .mat-select-arrow,
+        mat-label {
+          color: mat.get-contrast-color-from-palette($primary, default);
+        }
+      }
+
+      .chart-container {
+        background-color: if($is-dark,
+          darken(mat.get-color-from-palette($background, card), 3%),
+          lighten(mat.get-color-from-palette($background, card), 3%)
+        );
+        border-radius: 8px;
+        margin: 1rem;
+        padding: 1rem;
+      }
+
+      .amount-display {
+        color: mat.get-color-from-palette($foreground, text);
+        
+        .amount-label {
+          color: if($is-dark,
+            rgba(255, 255, 255, 0.7),
+            rgba(0, 0, 0, 0.6)
+          );
+        }
+        
+        .amount-value {
+          color: if($is-dark,
+            mat.get-color-from-palette($primary),
+            darken(mat.get-color-from-palette($primary), 10%)
+          );
+        }
+      }
+    }
+
+    .data-visualization-section {
+      .section-title {
+        color: mat.get-color-from-palette($foreground, text);
+      }
+      
+      .trends-card,
+      .amount-card {
+        background-color: mat.get-color-from-palette($background, card);
+        
+        .card-header-content {
+          .title-area {
+            .header-icon {
+              color: mat.get-color-from-palette($primary, default);
+            }
+            
+            .card-title {
+              color: mat.get-color-from-palette($foreground, text);
+            }
+          }
+          
+          .time-filter {
+            .mat-button-toggle-checked {
+              background-color: mat.get-color-from-palette($primary, default);
+              color: mat.get-contrast-color-from-palette($primary, default);
+            }
+          }
+        }
+        
+        &.disbursed-card {
+          .header-icon {
+            color: mat.get-color-from-palette($accent, default);
+          }
+        }
+        
+        &.collected-card {
+          .header-icon {
+            color: mat.get-color-from-palette($accent, lighter);
+          }
+        }
+        
+        .chart-summary {
+          background-color: mat.get-color-from-palette($background, hover);
+          
+          .summary-item {
+            .label {
+              color: mat.get-color-from-palette($foreground, secondary-text);
+            }
+            
+            .value {
+              &.disbursed, &.collected {
+                color: #4caf50;
+              }
+              
+              &.pending, &.outstanding {
+                color: #ff9800;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .loading-overlay {
+      background-color: if($is-dark,
+        rgba(0, 0, 0, 0.7),
+        rgba(255, 255, 255, 0.7)
+      );
+
+      .loading-spinner {
+        color: mat.get-color-from-palette($primary);
+      }
+    }
+
+    .mat-form-field {
+      &.mat-focused {
+        .mat-form-field-label {
+          color: mat.get-color-from-palette($primary);
+        }
+        .mat-form-field-ripple {
+          background-color: mat.get-color-from-palette($primary);
+        }
+      }
+    }
+
+    .error-message {
+      color: mat.get-color-from-palette($warn);
+      background-color: if($is-dark,
+        rgba(mat.get-color-from-palette($warn), 0.15),
+        rgba(mat.get-color-from-palette($warn), 0.1)
+      );
+      border-radius: 4px;
+      padding: 8px;
+      margin: 8px 0;
+    }
+
+    .search-card {
+      background-color: if($is-dark,
+        darken(mat.get-color-from-palette($background, raised-button), 5%),
+        mat.get-color-from-palette($background, card)
+      );
+      border: if($is-dark, 1px solid rgba(255, 255, 255, 0.12), none);
+      box-shadow: if($is-dark,
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        0 2px 4px rgba(0, 0, 0, 0.1)
+      );
+
+      .mat-form-field {
+        width: 100%;
+
+        .mat-form-field-flex {
+          background-color: if($is-dark,
+            darken(mat.get-color-from-palette($background, card), 3%),
+            lighten(mat.get-color-from-palette($background, card), 3%)
+          );
+        }
+
+        .mat-form-field-label {
+          color: if($is-dark,
+            rgba(255, 255, 255, 0.7),
+            rgba(0, 0, 0, 0.6)
+          );
+        }
+
+        .mat-input-element {
+          color: if($is-dark,
+            mat.get-color-from-palette($foreground, text),
+            mat.get-color-from-palette($foreground, text)
+          );
+
+          &::placeholder {
+            color: if($is-dark,
+              rgba(255, 255, 255, 0.5),
+              rgba(0, 0, 0, 0.42)
+            );
+          }
+        }
+
+        .mat-form-field-underline {
+          background-color: if($is-dark,
+            rgba(255, 255, 255, 0.2),
+            rgba(0, 0, 0, 0.12)
+          );
+        }
+
+        &.mat-focused {
+          .mat-form-field-label {
+            color: mat.get-color-from-palette($primary);
+          }
+
+          .mat-form-field-ripple {
+            background-color: mat.get-color-from-palette($primary);
+          }
+        }
+
+        .mat-form-field-prefix,
+        .mat-form-field-suffix {
+          color: if($is-dark,
+            rgba(255, 255, 255, 0.7),
+            rgba(0, 0, 0, 0.54)
+          );
+
+          .mat-icon {
+            color: inherit;
+          }
+        }
+      }
+
+      .search-results {
+        background-color: if($is-dark,
+          mat.get-color-from-palette($background, card),
+          mat.get-color-from-palette($background, card)
+        );
+        border: if($is-dark, 1px solid rgba(255, 255, 255, 0.12), none);
+        box-shadow: if($is-dark,
+          0 2px 8px rgba(0, 0, 0, 0.4),
+          0 2px 4px rgba(0, 0, 0, 0.1)
+        );
+
+        .search-result-item {
+          &:hover {
+            background-color: if($is-dark,
+              rgba(255, 255, 255, 0.04),
+              rgba(0, 0, 0, 0.04)
+            );
+          }
+        }
+      }
+
+      .mat-card-content {
+        padding: if($is-dark, 1rem, 0.5rem);
       }
     }
   }

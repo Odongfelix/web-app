@@ -403,4 +403,12 @@ export class ClientsService {
     }
     return this.http.post(`/v2/clients/search`, request);
   }
+
+  /**
+   * @param {HttpParams} httpParams HTTP Parameters
+   * @returns {Observable<any>} Clients.
+   */
+  getClientsWithStatus(httpParams: HttpParams): Observable<any> {
+    return this.http.get('/clients', { params: httpParams });
+  }
 }

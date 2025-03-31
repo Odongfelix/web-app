@@ -1,34 +1,276 @@
-<div class="container">
-  <mat-card class="card" fxLayout="column" fxLayoutGap="40px">
-    <div fxLayout="row" class="search">
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <!-- Search Section -->
+    <mat-card class="search-card">
       <mat-card-content>
-        <mat-form-field>
-          <mat-label>{{ 'labels.placeholders.Search Activity' | translate }}</mat-label>
-          <input matInput [matAutocomplete]="activitySearch" [formControl]="searchText" />
-        </mat-form-field>
+        <div class="search-wrapper">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'labels.placeholders.Search Activity' | translate }}</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput [matAutocomplete]="activitySearch" [formControl]="searchText" placeholder="Search for any activity..." />
+          </mat-form-field>
 
-        <mat-autocomplete #activitySearch="matAutocomplete">
-          <mat-option *ngFor="let activity of filteredActivities | async" [routerLink]="activity.path">
-            <span>{{ activity.activity }}</span>
-          </mat-option>
-        </mat-autocomplete>
+          <mat-autocomplete #activitySearch="matAutocomplete">
+            <mat-option *ngFor="let activity of filteredActivities | async" [routerLink]="activity.path">
+              <mat-icon>{{activity.icon || 'arrow_right'}}</mat-icon>
+              <span>{{ activity.activity }}</span>
+            </mat-option>
+          </mat-autocomplete>
+        </div>
       </mat-card-content>
-    </div>
+    </mat-card>
 
-    <div fxLayout="row" class="top-card">
-      <div class="trends-bar">
+    <div class="filter-controls">
+      <!-- Date Filter Card -->
+      <mat-card class="filter-card">
+        <mat-card-content>
+          <form [formGroup]="dateFilterForm" class="date-filter-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Start Date</mat-label>
+              <input matInput [matDatepicker]="startPicker" formControlName="startDate" [min]="minDate" [max]="maxDate">
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>End Date</mat-label>
+              <input matInput [matDatepicker]="endPicker" formControlName="endDate" [min]="dateFilterForm.get('startDate')?.value" [max]="maxDate">
+              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+            </mat-form-field>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Currency Filter Card -->
+      <mat-card class="filter-card">
+        <mat-card-content>
+          <mat-form-field appearance="outline">
+            <mat-label>Currency</mat-label>
+            <mat-select [formControl]="currencyControl" [disabled]="isLoading">
+              <mat-option *ngIf="isLoading">
+                <mat-spinner diameter="20"></mat-spinner>
+                Loading currencies...
+              </mat-option>
+              <mat-option *ngIf="hasError" disabled>
+                <mat-icon color="warn">error</mat-icon>
+                Failed to load currencies
+              </mat-option>
+              <mat-option *ngFor="let currency of currencies" [value]="currency.code">
+                {{ currency.symbol }} - {{ currency.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="hasError">
+              Failed to load currencies. Please try again later.
+            </mat-error>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Updated Summary Cards Section -->
+  <div class="summary-cards">
+    <!-- Total Clients Card -->
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="stat-icon clients">
+          <mat-icon>people</mat-icon>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Total Clients</span>
+          <span class="stat-value">
+            <mat-spinner *ngIf="isLoadingClients" diameter="20"></mat-spinner>
+            <span *ngIf="!isLoadingClients">{{totalClients | number}}</span>
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Active Clients Card -->
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="stat-icon active-clients">
+          <mat-icon>how_to_reg</mat-icon>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Active Clients</span>
+          <span class="stat-value">
+            <mat-spinner *ngIf="isLoadingClients" diameter="20"></mat-spinner>
+            <span *ngIf="!isLoadingClients">{{activeClients | number}}</span>
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="stat-icon loans">
+          <mat-icon>account_balance</mat-icon>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Active Loans</span>
+          <span class="stat-value">{{activeLoans || '0'}}</span>
+          <span class="stat-trend negative">
+            <mat-icon>trending_down</mat-icon> -2.1%
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="stat-icon collections">
+          <mat-icon>payments</mat-icon>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Total Collections</span>
+          <span class="stat-value">{{totalCollections || '$0'}}</span>
+          <span class="stat-trend positive">
+            <mat-icon>trending_up</mat-icon> +8.4%
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Data Visualization Cards -->
+  <div class="data-visualization-section">
+    <h2 class="section-title">Analytics Overview</h2>
+    
+    <!-- Client Trends Card -->
+    <mat-card class="trends-card">
+      <mat-card-header>
+        <div class="card-header-content">
+          <div class="title-area">
+            <mat-icon class="header-icon">trending_up</mat-icon>
+            <span class="card-title">Client Trends</span>
+          </div>
+          <div class="controls-area">
+            <mat-form-field appearance="outline" class="office-selector">
+              <mat-label>Office</mat-label>
+              <mat-select>
+                <mat-option value="all">All Offices</mat-option>
+                <mat-option value="main">Main Branch</mat-option>
+                <mat-option value="east">East Branch</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-button-toggle-group [formControl]="timescale" class="time-filter" appearance="legacy">
+              <mat-button-toggle value="Day">Day</mat-button-toggle>
+              <mat-button-toggle value="Week">Week</mat-button-toggle>
+              <mat-button-toggle value="Month">Month</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
         <mifosx-client-trends-bar></mifosx-client-trends-bar>
-      </div>
+      </mat-card-content>
+    </mat-card>
+    
+    <!-- Amount Cards Container -->
+    <div class="amount-cards-container">
+      <!-- Amount Disbursed Card -->
+      <mat-card class="amount-card disbursed-card">
+        <mat-card-header>
+          <div class="card-header-content">
+            <div class="title-area">
+              <mat-icon class="header-icon">account_balance</mat-icon>
+              <span class="card-title">Disbursements</span>
+            </div>
+            <mat-form-field appearance="outline" class="office-selector">
+              <mat-label>Office</mat-label>
+              <mat-select (selectionChange)="onDisbursementOfficeChange($event.value)">
+                <mat-option value="1">All Offices</mat-option>
+                <mat-option value="2">Main Branch</mat-option>
+                <mat-option value="3">East Branch</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div *ngIf="isLoadingDisbursement" class="loading-overlay">
+              <mat-spinner diameter="40"></mat-spinner>
+            </div>
+            <mifosx-amount-disbursed-pie [hidden]="isLoadingDisbursement"></mifosx-amount-disbursed-pie>
+            
+            <div class="chart-summary" [hidden]="isLoadingDisbursement">
+              <div class="summary-item">
+                <span class="label">Disbursed</span>
+                <span class="value disbursed">
+                  {{disbursedAmount | currency:(getCurrencySymbol())}}
+                </span>
+                <span class="trend" [ngClass]="disbursedTrend >= 0 ? 'positive' : 'negative'">
+                  <mat-icon>{{disbursedTrend >= 0 ? 'arrow_upward' : 'arrow_downward'}}</mat-icon>
+                  {{disbursedTrend >= 0 ? '+' : ''}}{{disbursedTrend}}%
+                </span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Pending</span>
+                <span class="value pending">
+                  {{pendingAmount | currency:(getCurrencySymbol())}}
+                </span>
+                <span class="trend" [ngClass]="pendingTrend >= 0 ? 'positive' : 'negative'">
+                  <mat-icon>{{pendingTrend >= 0 ? 'arrow_upward' : 'arrow_downward'}}</mat-icon>
+                  {{pendingTrend >= 0 ? '+' : ''}}{{pendingTrend}}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      
+      <!-- Amount Collected Card -->
+      <mat-card class="amount-card collected-card">
+        <mat-card-header>
+          <div class="card-header-content">
+            <div class="title-area">
+              <mat-icon class="header-icon">payments</mat-icon>
+              <span class="card-title">Collections</span>
+            </div>
+            <mat-form-field appearance="outline" class="office-selector">
+              <mat-label>Office</mat-label>
+              <mat-select (selectionChange)="onCollectionOfficeChange($event.value)">
+                <mat-option value="1">All Offices</mat-option>
+                <mat-option value="2">Main Branch</mat-option>
+                <mat-option value="3">East Branch</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div *ngIf="isLoadingCollection" class="loading-overlay">
+              <mat-spinner diameter="40"></mat-spinner>
+            </div>
+            <mifosx-amount-collected-pie [hidden]="isLoadingCollection"></mifosx-amount-collected-pie>
+            
+            <div class="chart-summary" [hidden]="isLoadingCollection">
+              <div class="summary-item">
+                <span class="label">Collected</span>
+                <span class="value collected">
+                  {{collectedAmount | currency:(getCurrencySymbol())}}
+                </span>
+                <span class="trend" [ngClass]="collectedTrend >= 0 ? 'positive' : 'negative'">
+                  <mat-icon>{{collectedTrend >= 0 ? 'arrow_upward' : 'arrow_downward'}}</mat-icon>
+                  {{collectedTrend >= 0 ? '+' : ''}}{{collectedTrend}}%
+                </span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Outstanding</span>
+                <span class="value outstanding">
+                  {{outstandingAmount | currency:(getCurrencySymbol())}}
+                </span>
+                <span class="trend" [ngClass]="outstandingTrend >= 0 ? 'positive' : 'negative'">
+                  <mat-icon>{{outstandingTrend >= 0 ? 'arrow_upward' : 'arrow_downward'}}</mat-icon>
+                  {{outstandingTrend >= 0 ? '+' : ''}}{{outstandingTrend}}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
     </div>
-
-    <div fxLayout="row" class="bottom-card">
-      <div class="amount-disbursed">
-        <mifosx-amount-disbursed-pie></mifosx-amount-disbursed-pie>
-      </div>
-
-      <div class="amount-collected">
-        <mifosx-amount-collected-pie></mifosx-amount-collected-pie>
-      </div>
-    </div>
-  </mat-card>
+  </div>
 </div>
