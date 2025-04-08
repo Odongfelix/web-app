@@ -287,4 +287,94 @@ export class TransactionsTabComponent implements OnInit {
     return true;
   }
 
+  /**
+   * Prints the transactions table
+   */
+  printTransactions(): void {
+    const printContent = document.querySelector('.transactions-table') as HTMLElement;
+    const paginator = document.querySelector('mat-paginator') as HTMLElement;
+    
+    // Create a clone of the content to print
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Loan Transactions</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                font-size: 12px;
+              }
+              table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+              }
+              th, td {
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              }
+              th {
+                background-color: #f2f2f2;
+                font-weight: bold;
+              }
+              .r-amount {
+                text-align: right;
+              }
+              .center {
+                text-align: center;
+              }
+              .undo {
+                background-color: #ffebee;
+              }
+              .linked {
+                background-color: #e8f5e9;
+              }
+              .active {
+                background-color: #e3f2fd;
+              }
+              .td-min-space {
+                min-width: 100px;
+              }
+              .td-select {
+                cursor: pointer;
+              }
+              @media print {
+                body {
+                  font-size: 10pt;
+                }
+                table {
+                  page-break-inside: auto;
+                }
+                tr {
+                  page-break-inside: avoid;
+                  page-break-after: auto;
+                }
+                .action-button, .select-row {
+                  cursor: default;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <h2>Loan Transactions</h2>
+            ${printContent.outerHTML}
+          </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      printWindow.focus();
+      
+      // Wait for resources to load before printing
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    }
+  }
+
 }
