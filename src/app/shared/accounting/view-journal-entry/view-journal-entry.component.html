@@ -1,7 +1,7 @@
 <h1 mat-dialog-title>{{ 'labels.heading.View Journal Entry' | translate }}</h1>
 
-<div mat-dialog-content>
-  <table>
+<div mat-dialog-content class="journal-entry-content">
+  <table class="journal-entry-table">
     <tr>
       <th>{{ 'labels.inputs.Office' | translate }}</th>
       <td>{{ data.journalEntry.officeName }}</td>
@@ -107,5 +107,9 @@
 </div>
 
 <mat-dialog-actions align="end">
+  <button mat-button (click)="printJournalEntry()">
+    <mat-icon>print</mat-icon>
+    {{ 'labels.buttons.Print' | translate }}
+  </button>
   <button mat-button mat-dialog-close>{{ 'labels.buttons.Close' | translate }}</button>
 </mat-dialog-actions>
