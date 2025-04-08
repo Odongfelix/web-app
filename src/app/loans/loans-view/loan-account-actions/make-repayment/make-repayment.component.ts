@@ -78,8 +78,19 @@ export class MakeRepaymentComponent implements OnInit {
 
   setRepaymentLoanDetails() {
     this.paymentTypes = this.dataObject.paymentTypeOptions;
+    
+    // Find the "Notes and Coins" payment type
+    const notesAndCoinsPaymentType = this.paymentTypes.find((type: any) => 
+      type.name.toLowerCase().includes('notes') && type.name.toLowerCase().includes('coins')
+    );
+    
+    // Set the default payment type to "Notes and Coins" if found, otherwise use the first available option
+    const defaultPaymentTypeId = notesAndCoinsPaymentType ? notesAndCoinsPaymentType.id : 
+                                (this.paymentTypes.length > 0 ? this.paymentTypes[0].id : '');
+    
     this.repaymentLoanForm.patchValue({
-      transactionAmount: this.dataObject.amount
+      transactionAmount: this.dataObject.amount,
+      paymentTypeId: defaultPaymentTypeId
     });
   }
 
