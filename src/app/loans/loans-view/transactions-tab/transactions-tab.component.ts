@@ -291,8 +291,8 @@ export class TransactionsTabComponent implements OnInit {
    * Prints the transactions table
    */
   printTransactions(): void {
-    const printContent = document.querySelector('.transactions-table') as HTMLElement;
-    const paginator = document.querySelector('mat-paginator') as HTMLElement;
+    const transactions = this.dataSource.filteredData;
+    const dateFormat = this.settingsService.dateFormat;
     
     // Create a clone of the content to print
     const printWindow = window.open('', '_blank');
@@ -327,20 +327,27 @@ export class TransactionsTabComponent implements OnInit {
               .center {
                 text-align: center;
               }
-              .undo {
+              .strike {
+                text-decoration: line-through;
                 background-color: #ffebee;
               }
               .linked {
                 background-color: #e8f5e9;
               }
-              .active {
-                background-color: #e3f2fd;
+              .accrual {
+                background-color: #fff3e0;
               }
-              .td-min-space {
-                min-width: 100px;
+              .chargeoff {
+                background-color: #fce4ec;
               }
-              .td-select {
-                cursor: pointer;
+              .down-payment {
+                background-color: #e8eaf6;
+              }
+              .reage {
+                background-color: #f3e5f5;
+              }
+              .reamortize {
+                background-color: #e0f2f1;
               }
               @media print {
                 body {
@@ -353,15 +360,47 @@ export class TransactionsTabComponent implements OnInit {
                   page-break-inside: avoid;
                   page-break-after: auto;
                 }
-                .action-button, .select-row {
-                  cursor: default;
-                }
               }
             </style>
           </head>
           <body>
             <h2>Loan Transactions</h2>
-            ${printContent.outerHTML}
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>ID</th>
+                  <th>Office</th>
+                  <th>External ID</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Principal</th>
+                  <th>Interest</th>
+                  <th>Fees</th>
+                  <th>Penalties</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${transactions.map((transaction: any, index: number) => `
+                  <tr class="${this.loanTransactionColor(transaction)}">
+                    <td>${index + 1}</td>
+                    <td>${transaction.id}</td>
+                    <td>${transaction.officeName || ''}</td>
+                    <td>${transaction.externalId || ''}</td>
+                    <td>${this.dateUtils.formatDate(transaction.date, dateFormat)}</td>
+                    <td>${transaction.type.value}</td>
+                    <td class="r-amount">${transaction.amount || ''}</td>
+                    <td class="r-amount">${transaction.principalPortion || ''}</td>
+                    <td class="r-amount">${transaction.interestPortion || ''}</td>
+                    <td class="r-amount">${transaction.feeChargesPortion || ''}</td>
+                    <td class="r-amount">${transaction.penaltyChargesPortion || ''}</td>
+                    <td class="r-amount">${transaction.outstandingLoanBalance || ''}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
           </body>
         </html>
       `);
