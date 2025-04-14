@@ -99,7 +99,9 @@ export class LoanAccountActionsComponent {
   constructor(private route: ActivatedRoute,
     private router: Router
   ) {
-    this.navigationData = this.router.getCurrentNavigation().extras.state.data;
+    const navigation = this.router.getCurrentNavigation();
+    this.navigationData = navigation?.extras?.state?.data;
+
     this.route.data.subscribe((data: { actionButtonData: any }) => {
       this.actionButtonData = data.actionButtonData;
     });
