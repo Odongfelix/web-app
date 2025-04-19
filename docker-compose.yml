@@ -15,8 +15,8 @@ services:
     ports:
       - '4200:80'
     environment:
-      - FINERACT_API_URLS=https://dev.mifos.io,https://demo.mifos.io,https://qa.mifos.io,https://staging.mifos.io,https://mobile.mifos.io,https://demo.fineract.dev,https://localhost:8443
-      - FINERACT_API_URL=https://localhost:8443
+      - FINERACT_API_URLS=https://dev.mifos.io,https://demo.mifos.io,https://qa.mifos.io,https://staging.mifos.io,https://mobile.mifos.io,https://demo.fineract.dev,http://localhost:8080,https://localhost:8443
+      - FINERACT_API_URL=http://localhost:8080
       - FINERACT_API_PROVIDER=/fineract-provider/api
       - FINERACT_API_VERSION=/v1
       - FINERACT_PLATFORM_TENANT_IDENTIFIER=default

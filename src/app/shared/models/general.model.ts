@@ -47,12 +47,8 @@ export interface ChargeOffReasonToExpenseAccountMapping {
 }
 
 export interface ChargeOffReasonCodeValue {
-  active: boolean;
-  description: string;
   id: number;
-  mandatory: boolean;
   name: string;
-  position?: number;
 }
 
 export interface PaymentType {

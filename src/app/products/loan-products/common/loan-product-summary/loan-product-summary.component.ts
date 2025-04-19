@@ -3,9 +3,8 @@ import { DelinquencyBucket, LoanProduct } from '../../models/loan-product.model'
 import {
   AccountingMapping,
   Charge,
-  ChargeOffReasonCodeValue,
-  ChargeOffReasonToExpenseAccountMapping,
   ChargeToIncomeAccountMapping,
+  ChargeOffReasonCodeValue,
   GLAccount,
   PaymentChannelToFundSourceMapping,
   PaymentType,
@@ -46,7 +45,7 @@ export class LoanProductSummaryComponent implements OnInit, OnChanges {
   paymentChannelToFundSourceMappings: PaymentChannelToFundSourceMapping[] = [];
   feeToIncomeAccountMappings: ChargeToIncomeAccountMapping[] = [];
   penaltyToIncomeAccountMappings: ChargeToIncomeAccountMapping[] = [];
-  chargeOffReasonToExpenseAccountMappings: ChargeOffReasonToExpenseAccountMapping[] = [];
+  chargeOffReasonToExpenseAccountMappings: any[] = [];
 
   constructor(private accounting: Accounting) { }
 
@@ -75,7 +74,7 @@ export class LoanProductSummaryComponent implements OnInit, OnChanges {
       this.paymentChannelToFundSourceMappings = this.loanProduct.paymentChannelToFundSourceMappings || [];
       this.feeToIncomeAccountMappings = this.loanProduct.feeToIncomeAccountMappings || [];
       this.penaltyToIncomeAccountMappings = this.loanProduct.penaltyToIncomeAccountMappings || [];
-      this.chargeOffReasonToExpenseAccountMappings = this.loanProduct.chargeOffReasonToExpenseAccountMappings || [];
+      this.chargeOffReasonToExpenseAccountMappings = [];
 
     } else {
       this.accountingMappings = {};
@@ -145,7 +144,7 @@ export class LoanProductSummaryComponent implements OnInit, OnChanges {
 
         this.chargeOffReasonToExpenseAccountMappings = [];
         if (this.loanProduct.chargeOffReasonToExpenseAccountMappings?.length > 0) {
-          this.loanProduct.chargeOffReasonToExpenseAccountMappings.forEach((m: ChargeOffReasonToExpenseAccountMapping) => {
+          this.loanProduct.chargeOffReasonToExpenseAccountMappings.forEach((m: any) => {
             let optionData = this.optionDataLookUp(m.chargeOffReasonCodeValueId, chargeOffReasonOptions);
             this.chargeOffReasonToExpenseAccountMappings.push({
               expenseAccount: this.glAccountLookUp(m.expenseAccountId, expenseAccountData),
@@ -373,7 +372,7 @@ export class LoanProductSummaryComponent implements OnInit, OnChanges {
     return (this.loanProduct.paymentChannelToFundSourceMappings?.length > 0
       || this.loanProduct.feeToIncomeAccountMappings?.length > 0
       || this.loanProduct.penaltyToIncomeAccountMappings?.length > 0
-        || this.loanProduct.chargeOffReasonToExpenseAccountMappings?.length > 0);
+    );
   }
 
   getAccountingRuleName(value: string): string {

@@ -236,7 +236,7 @@ export class RunReportComponent implements OnInit {
           formattedResponse[newKey] = value;
           break;
         case 'select':
-          formattedResponse[newKey] = value['id'];
+          formattedResponse[newKey] = (value as any).id;
           break;
         case 'date':
           if (this.isTableReport()) {
@@ -328,7 +328,7 @@ export class RunReportComponent implements OnInit {
   exportToXLS(reportName: string, csvData: any, displayedColumns: string[]): void {
     const fileName = `${reportName}.xlsx`;
     const data = csvData.map((object: any) => {
-      const row = {};
+      const row: { [key: string]: any } = {};
       for (let i = 0; i < displayedColumns.length; i++) {
         row[displayedColumns[i]] = object.row[i];
       }
@@ -340,4 +340,43 @@ export class RunReportComponent implements OnInit {
     XLSX.writeFile(wb, fileName);
   }
 
+  /**
+   * Handles the select dropdown opening event.
+   * @param {ReportParameter} param The parameter for which the select dropdown was opened.
+   * @param {boolean} isOpen Whether the dropdown is open or closed.
+   */
+  onSelectOpened(param: ReportParameter, isOpen: boolean): void {
+    // Initialize filteredOptions with all options when dropdown is opened
+    param.filteredOptions = [...param.selectOptions];
+    
+    // Focus the search input when dropdown is opened
+    if (isOpen) {
+      setTimeout(() => {
+        const searchInput = document.getElementById(`search-${param.name}`);
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }, 0);
+    }
+  }
+
+  /**
+   * Handles keyboard events in select dropdowns for filtering options.
+   * @param {KeyboardEvent} event The keyboard event.
+   * @param {ReportParameter} param The parameter for which the select dropdown is being used.
+   */
+  onSelectKeydown(event: KeyboardEvent, param: ReportParameter): void {
+    const searchText = (event.target as HTMLInputElement).value.toLowerCase();
+    if (param.selectOptions && param.selectOptions.length > 0) {
+      if (searchText === '') {
+        // If search is empty, show all options
+        param.filteredOptions = [...param.selectOptions];
+      } else {
+        // Filter options based on search text
+        param.filteredOptions = param.selectOptions.filter((option: SelectOption) =>
+          option.name.toLowerCase().includes(searchText)
+        );
+      }
+    }
+  }
 }

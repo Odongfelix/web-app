@@ -1,0 +1,14 @@
+<div *ngIf="loanProduct?.allowSavingsLinkage">
+  <mat-checkbox formControlName="linkSavingsAccount">
+    Link Savings Account
+  </mat-checkbox>
+
+  <mat-form-field *ngIf="loanApplicationForm.get('linkSavingsAccount').value">
+    <mat-label>Select Savings Account</mat-label>
+    <mat-select formControlName="savingsAccountId">
+      <mat-option *ngFor="let account of savingsAccounts" [value]="account.id">
+        {{ account.accountNo }} - {{ account.productName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div> 

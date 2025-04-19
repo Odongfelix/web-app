@@ -12,6 +12,7 @@ export class ReportParameter {
     parentParameterName: string;
     inputName: string;
     selectOptions: any[] = [];
+    filteredOptions: any[] = [];
     childParameters: any[] = [];
     pentahoName: any;
 

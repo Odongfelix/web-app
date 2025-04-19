@@ -287,4 +287,133 @@ export class TransactionsTabComponent implements OnInit {
     return true;
   }
 
+  /**
+   * Prints the transactions table
+   */
+  printTransactions(): void {
+    const transactions = this.dataSource.filteredData;
+    const dateFormat = this.settingsService.dateFormat;
+    
+    // Create a clone of the content to print
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Loan Transactions</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                font-size: 12px;
+              }
+              table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+              }
+              th, td {
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              }
+              th {
+                background-color: #f2f2f2;
+                font-weight: bold;
+              }
+              .r-amount {
+                text-align: right;
+              }
+              .center {
+                text-align: center;
+              }
+              .strike {
+                text-decoration: line-through;
+                background-color: #ffebee;
+              }
+              .linked {
+                background-color: #e8f5e9;
+              }
+              .accrual {
+                background-color: #fff3e0;
+              }
+              .chargeoff {
+                background-color: #fce4ec;
+              }
+              .down-payment {
+                background-color: #e8eaf6;
+              }
+              .reage {
+                background-color: #f3e5f5;
+              }
+              .reamortize {
+                background-color: #e0f2f1;
+              }
+              @media print {
+                body {
+                  font-size: 10pt;
+                }
+                table {
+                  page-break-inside: auto;
+                }
+                tr {
+                  page-break-inside: avoid;
+                  page-break-after: auto;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <h2>Loan Transactions</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>ID</th>
+                  <th>Office</th>
+                  <th>External ID</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Principal</th>
+                  <th>Interest</th>
+                  <th>Fees</th>
+                  <th>Penalties</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${transactions.map((transaction: any, index: number) => `
+                  <tr class="${this.loanTransactionColor(transaction)}">
+                    <td>${index + 1}</td>
+                    <td>${transaction.id}</td>
+                    <td>${transaction.officeName || ''}</td>
+                    <td>${transaction.externalId || ''}</td>
+                    <td>${this.dateUtils.formatDate(transaction.date, dateFormat)}</td>
+                    <td>${transaction.type.value}</td>
+                    <td class="r-amount">${transaction.amount || ''}</td>
+                    <td class="r-amount">${transaction.principalPortion || ''}</td>
+                    <td class="r-amount">${transaction.interestPortion || ''}</td>
+                    <td class="r-amount">${transaction.feeChargesPortion || ''}</td>
+                    <td class="r-amount">${transaction.penaltyChargesPortion || ''}</td>
+                    <td class="r-amount">${transaction.outstandingLoanBalance || ''}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      printWindow.focus();
+      
+      // Wait for resources to load before printing
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    }
+  }
+
 }

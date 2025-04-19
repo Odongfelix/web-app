@@ -2,7 +2,10 @@
   <div fxLayout="row" fxLayoutAlign="start center">
     <h3 fxFlex="90%">{{ 'labels.inputs.Loan Collateral Details' | translate }}</h3>
     <div fxLayout="row" fxLayoutAlign="end" fxLayoutGap="20px" class="action-buttons">
-      <button mat-raised-button color="primary" [routerLink]="['../actions/Add Collateral']">
+      <button mat-raised-button color="primary" 
+        [routerLink]="['../actions/Add Collateral']" 
+        [state]="{ data: loanCollaterals }"
+        *mifosxHasPermission="'CREATE_COLLATERAL'">
         {{ 'labels.buttons.Add Collateral' | translate }}
       </button>
     </div>

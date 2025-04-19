@@ -26,10 +26,6 @@ import { CodeName, OptionData } from 'app/shared/models/option-data.model';
   styleUrls: ['./loans-account-terms-step.component.scss']
 })
 export class LoansAccountTermsStepComponent implements OnInit, OnChanges {
-  convertedAmount: Number = 0;
-  amount: number = 0;
-  exchangeRate: number = 1.0;
-
   /** Loans Product Options */
   @Input() loansProductOptions: any;
   /** Loans Account Product Template */
@@ -109,36 +105,6 @@ export class LoansAccountTermsStepComponent implements OnInit, OnChanges {
     this.loanId = this.route.snapshot.params['loanId'];
     this.createloansAccountTermsForm();
 
-  }
-
-  convertable: Boolean = false;
-
-  convert() {
-    try {
-      this.convertedAmount = this.exchangeRate * this.amount
-      console.log(this.convertedAmount);
-      this.loansAccountTermsForm.patchValue({
-        'principalAmount': this.convertedAmount
-      })
-    } catch (ex) {
-
-    }
-  }
-
-  setAmount(amount: number) {
-    //convert after wards
-    this.amount = amount;
-    this.convert();
-  }
-
-  setExchangeRate(rate: number) {
-    //convert after wards
-    this.exchangeRate = rate;
-    this.convert();
-  }
-
-  changeConverter() {
-    this.convertable = !this.convertable;
   }
 
   /**

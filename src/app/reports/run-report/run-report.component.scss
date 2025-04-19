@@ -1,3 +1,31 @@
 .input {
   max-width: 37rem;
 }
+
+.select-search {
+  padding: 8px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: white;
+}
+
+.search-field {
+  width: 100%;
+  margin-bottom: -1.25em;
+}
+
+/* Remove underline from search input */
+.search-field ::ng-deep .mat-form-field-underline {
+  display: none;
+}
+
+/* Remove the bottom margin that creates space for the underline */
+.search-field ::ng-deep .mat-form-field-wrapper {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+::ng-deep .mat-select-panel {
+  max-height: 350px !important;
+}
