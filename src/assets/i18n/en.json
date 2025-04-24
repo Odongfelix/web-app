@@ -2,6 +2,11 @@
   "labels": {
     "inputs": {
       "Exchange Rate": "Exchange Rate"
+    },
+    "catalogs": {
+      "National Id": "National ID",
+      "Active": "Active",
+      "Inactive": "Inactive"
     }
   }
 }

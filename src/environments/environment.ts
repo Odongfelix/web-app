@@ -47,7 +47,7 @@ export const environment = {
   waitTimeForCOBCatchUp: window['env']['waitTimeForCOBCatchUp'] || 30,
   session: {
     timeout: {
-      idleTimeout: window['env']['sessionIdleTimeout'] || 300000, // 5 minutes
+      idleTimeout: 60000, // 1 minute in milliseconds
     }
   }
 };
