@@ -1,0 +1,72 @@
+<h2 mat-dialog-title>{{ 'labels.heading.Add Cost' | translate }}</h2>
+
+<form [formGroup]="costForm" (ngSubmit)="submit()">
+  <mat-dialog-content>
+    <div fxLayout="column">
+      <mat-form-field>
+        <mat-label>{{ 'labels.inputs.Date' | translate }}</mat-label>
+        <input matInput [matDatepicker]="datePicker" formControlName="date" required>
+        <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+        <mat-datepicker #datePicker></mat-datepicker>
+        <mat-error *ngIf="costForm.controls['date'].hasError('required')">
+          {{ 'labels.errors.Date Required' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>{{ 'labels.inputs.Description' | translate }}</mat-label>
+        <input matInput formControlName="description" required>
+        <mat-error *ngIf="costForm.controls['description'].hasError('required')">
+          {{ 'labels.errors.Description Required' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>{{ 'labels.inputs.Amount' | translate }}</mat-label>
+        <input matInput type="number" formControlName="amount" required>
+        <mat-error *ngIf="costForm.controls['amount'].hasError('required')">
+          {{ 'labels.errors.Amount Required' | translate }}
+        </mat-error>
+        <mat-error *ngIf="costForm.controls['amount'].hasError('min')">
+          {{ 'labels.errors.Amount Must Be Positive' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>{{ 'labels.inputs.Category' | translate }}</mat-label>
+        <mat-select formControlName="category" required>
+          <mat-option *ngFor="let category of categories" [value]="category">
+            {{ category }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="costForm.controls['category'].hasError('required')">
+          {{ 'labels.errors.Category Required' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>{{ 'labels.inputs.GL Account' | translate }}</mat-label>
+        <mat-select formControlName="glAccount" required>
+          <mat-option *ngFor="let account of glAccounts" [value]="account.id">
+            {{ account.name }} ({{ account.glCode }})
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="costForm.controls['glAccount'].hasError('required')">
+          {{ 'labels.errors.GL Account Required' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>{{ 'labels.inputs.Notes' | translate }}</mat-label>
+        <textarea matInput formControlName="notes" rows="3"></textarea>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">{{ 'labels.buttons.Cancel' | translate }}</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="!costForm.valid">
+      {{ 'labels.buttons.Submit' | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>

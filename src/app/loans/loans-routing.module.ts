@@ -28,6 +28,7 @@ import { ViewRecieptComponent } from './loans-view/transactions/view-reciept/vie
 import { ExportTransactionsComponent } from './loans-view/transactions/export-transactions/export-transactions.component';
 import { GlimAccountComponent } from './glim-account/glim-account.component';
 import { CreateGlimAccountComponent } from './glim-account/create-glim-account/create-glim-account.component';
+import { CostHandlingTabComponent } from './loans-view/cost-handling-tab/cost-handling-tab.component';
 
 /** Custom Resolvers */
 import { LoanDetailsResolver } from './common-resolvers/loan-details.resolver';
@@ -123,13 +124,17 @@ const routes: Routes = [
               {
                 path: '',
                 component: TransactionsTabComponent
-
               },
               {
                 path: 'export',
                 component: ExportTransactionsComponent
               }
             ]
+          },
+          {
+            path: 'cost-handling',
+            component: CostHandlingTabComponent,
+            data: { title: 'Cost Handling', breadcrumb: 'Cost Handling', routeParamBreadcrumb: false }
           },
           {
             path: 'delinquencytags',

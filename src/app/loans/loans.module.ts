@@ -1,11 +1,22 @@
 /** Angular Imports */
 import { NgModule } from '@angular/core';
 import { DirectivesModule } from '../directives/directives.module';
+import { ReactiveFormsModule } from '@angular/forms';
 
 /** Custom Modules */
 import { LoansRoutingModule } from './loans-routing.module';
 import { SharedModule } from 'app/shared/shared.module';
 import { PipesModule } from '../pipes/pipes.module';
+import { TranslateModule } from '@ngx-translate/core';
+import { SharedMaterialModule } from '../shared/shared-material.module';
+
+/** Material Imports */
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 /** Custom Components */
 import { AddLoanChargeComponent } from './loans-view/loan-account-actions/add-loan-charge/add-loan-charge.component';
@@ -62,6 +73,8 @@ import { GlimDetailsStepComponent } from './glim-account/create-glim-account/gli
 import { GlimChargesStepComponent } from './glim-account/create-glim-account/glim-account-stepper/glim-charges-step/glim-charges-step.component';
 import { GlimTermsStepComponent } from './glim-account/create-glim-account/glim-account-stepper/glim-terms-step/glim-terms-step.component';
 import { GlimPreviewStepComponent } from './glim-account/create-glim-account/glim-account-stepper/glim-preview-step/glim-preview-step.component';
+import { CostHandlingTabComponent } from './loans-view/cost-handling-tab/cost-handling-tab.component';
+import { AddCostDialogComponent } from './loans-view/cost-handling-tab/add-cost-dialog/add-cost-dialog.component';
 
 /** Dialog Components */
 import { LoansAccountViewGuarantorDetailsDialogComponent } from './custom-dialog/loans-account-view-guarantor-details-dialog/loans-account-view-guarantor-details-dialog.component';
@@ -78,7 +91,6 @@ import { ChargeOffComponent } from './loans-view/loan-account-actions/charge-off
 import { AssetTransferLoanComponent } from './loans-view/loan-account-actions/asset-transfer-loan/asset-transfer-loan.component';
 import { ExternalAssetOwnerTabComponent } from './loans-view/external-asset-owner-tab/external-asset-owner-tab.component';
 import { ExternalAssetTransferComponent } from './loans-view/external-asset-owner-tab/external-asset-transfer/external-asset-transfer.component';
-import { TranslateModule } from '@ngx-translate/core';
 import { LoanDelinquencyActionDialogComponent } from './custom-dialog/loan-delinquency-action-dialog/loan-delinquency-action-dialog.component';
 import { LoanReagingComponent } from './loans-view/loan-account-actions/loan-reaging/loan-reaging.component';
 import { LoanReamortizeComponent } from './loans-view/loan-account-actions/loan-reamortize/loan-reamortize.component';
@@ -96,7 +108,15 @@ import { AddInterestPauseComponent } from './loans-view/loan-account-actions/add
     DirectivesModule,
     LoansRoutingModule,
     PipesModule,
-    TranslateModule
+    TranslateModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    SharedMaterialModule
   ],
   declarations: [
     AddLoanChargeComponent,
@@ -171,7 +191,9 @@ import { AddInterestPauseComponent } from './loans-view/loan-account-actions/add
     LoanReagingComponent,
     LoanReamortizeComponent,
     LoanTermVariationsTabComponent,
-    AddInterestPauseComponent
+    AddInterestPauseComponent,
+    CostHandlingTabComponent,
+    AddCostDialogComponent
   ],
   providers: [ ],
 })
