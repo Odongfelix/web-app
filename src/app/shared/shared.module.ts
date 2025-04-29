@@ -50,6 +50,7 @@ import { ThemeToggleComponent } from './theme-toggle/theme-toggle.component';
 import { LongTextComponent } from './long-text/long-text.component';
 import { DropdownComponent } from './dropdown/dropdown.component';
 import { InputAmountComponent } from './input-amount/input-amount.component';
+import { SharedMaterialModule } from './shared-material.module';
 
 /**
  * Shared Module
@@ -66,7 +67,8 @@ import { InputAmountComponent } from './input-amount/input-amount.component';
     PipesModule,
     DirectivesModule,
     NgxMatDatetimePickerModule,
-    NgxMatNativeDateModule
+    NgxMatNativeDateModule,
+    SharedMaterialModule
   ],
   declarations: [
     FormfieldComponent,
@@ -141,7 +143,8 @@ import { InputAmountComponent } from './input-amount/input-amount.component';
     ThemeToggleComponent,
     LongTextComponent,
     DropdownComponent,
-    InputAmountComponent
+    InputAmountComponent,
+    SharedMaterialModule
   ]
 })
 export class SharedModule { }

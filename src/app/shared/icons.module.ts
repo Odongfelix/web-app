@@ -31,6 +31,7 @@ import {
   faCopy,
   faDollarSign,
   faEdit,
+  faEllipsisV,
   faEnvelope,
   faExchange,
   faExclamationCircle,
@@ -156,6 +157,7 @@ export class IconsModule {
       faCopy,
       faDollarSign,
       faEdit,
+      faEllipsisV,
       faEnvelope,
       faExchange,
       faExclamationCircle,
@@ -233,8 +235,7 @@ export class IconsModule {
       faTasks,
       faCoins,
       faPiggyBank,
-      faBars,
-      faUndo,
+      faEllipsisV,
       faReceipt,
       faTableCells
     );

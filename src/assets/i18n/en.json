@@ -1,7 +1,58 @@
 {
   "labels": {
+    "heading": {
+      "Add New Cost": "Add New Cost",
+      "Reverse Transaction": "Reverse Transaction"
+    },
     "inputs": {
-      "Exchange Rate": "Exchange Rate"
+      "Cost Handling": "Cost Handling",
+      "Date": "Date",
+      "Description": "Description",
+      "Amount": "Amount",
+      "Category": "Category",
+      "GL Account": "GL Account",
+      "Status": "Status",
+      "Actions": "Actions",
+      "Notes": "Notes",
+      "Exchange Rate": "Exchange Rate",
+      "Currency": "Currency",
+      "Office": "Office",
+      "Reference Number": "Reference Number",
+      "Transaction Date": "Transaction Date",
+      "Payment Type": "Payment Type",
+      "Account Number": "Account Number",
+      "Cheque Number": "Cheque Number",
+      "Routing Code": "Routing Code",
+      "Receipt Number": "Receipt Number",
+      "Bank Number": "Bank Number",
+      "Comments": "Comments",
+      "Debit Amount": "Debit Amount",
+      "Credit Amount": "Credit Amount"
+    },
+    "buttons": {
+      "Add New Cost": "Add New Cost",
+      "Submit": "Submit",
+      "Cancel": "Cancel",
+      "Approve": "Approve",
+      "Reject": "Reject",
+      "Reverse Transaction": "Reverse Transaction"
+    },
+    "errors": {
+      "Date Required": "Date is required",
+      "Description Required": "Description is required",
+      "Amount Required": "Amount is required",
+      "Amount Must Be Positive": "Amount must be positive",
+      "Category Required": "Category is required",
+      "GL Account Required": "GL Account is required"
+    },
+    "catalogs": {
+      "National Id": "National ID",
+      "Active": "Active",
+      "Inactive": "Inactive"
+    },
+    "messages": {
+      "Transaction Reversed": "Transaction has been reversed successfully",
+      "No Permission": "You do not have permission to perform this action"
     }
   }
 }

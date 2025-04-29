@@ -211,6 +211,15 @@
           {{ 'labels.inputs.Transactions' | translate }}
         </a>
       </ng-container>
+      <a
+        mat-tab-link
+        [routerLink]="['./cost-handling']"
+        routerLinkActive
+        #costHandling="routerLinkActive"
+        [active]="costHandling.isActive"
+      >
+        {{ 'Cost Handling' }}
+      </a>
       <ng-container *ngIf="loanDetailsData.status.active">
         <a
           mat-tab-link

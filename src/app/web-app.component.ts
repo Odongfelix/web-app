@@ -218,7 +218,7 @@ export class WebAppComponent implements OnInit {
     // Subscribe to session timeout If IdleTimeout is higher than 0 (zero)
     if (environment.session.timeout.idleTimeout > 0) {
       this.idle.$onSessionTimeout.subscribe(() => {
-        if (this.authenticationService.getUserLoggedIn()) {
+        if (this.authenticationService.isAuthenticated()) {
           this.alertService.alert({type: 'Session timeout', message: this.translateService.instant('labels.text.Session timed out')});
           this.dialog.open(SessionTimeoutDialogComponent);
           this.logout();

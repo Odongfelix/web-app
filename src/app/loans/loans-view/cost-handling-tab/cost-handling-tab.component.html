@@ -1,0 +1,85 @@
+<div class="container">
+  <div fxLayout="row" fxLayoutAlign="end" fxLayoutGap="20px" class="cost-handling-buttons">
+    <button mat-raised-button color="primary" (click)="openAddCostDialog()">
+      {{ 'labels.buttons.Add New Cost' | translate }}
+    </button>
+  </div>
+
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z1 cost-handling-table">
+    <!-- Date Column -->
+    <ng-container matColumnDef="date">
+      <th mat-header-cell *matHeaderCellDef> {{ 'labels.inputs.Date' | translate }} </th>
+      <td mat-cell *matCellDef="let element"> 
+        {{element.date | date}}
+        <span *ngIf="element.isReversed" class="reversed-label">(Reversed on {{element.reversalDate | date}})</span>
+      </td>
+    </ng-container>
+
+    <!-- Description Column -->
+    <ng-container matColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef> {{ 'labels.inputs.Description' | translate }} </th>
+      <td mat-cell *matCellDef="let element" [class.reversed-text]="element.isReversed"> {{element.description}} </td>
+    </ng-container>
+
+    <!-- Amount Column -->
+    <ng-container matColumnDef="amount">
+      <th mat-header-cell *matHeaderCellDef> {{ 'labels.inputs.Amount' | translate }} </th>
+      <td mat-cell *matCellDef="let element" [class.reversed-text]="element.isReversed"> {{element.amount | number:'1.2-2'}} </td>
+    </ng-container>
+
+    <!-- Category Column -->
+    <ng-container matColumnDef="category">
+      <th mat-header-cell *matHeaderCellDef> {{ 'labels.inputs.Category' | translate }} </th>
+      <td mat-cell *matCellDef="let element" [class.reversed-text]="element.isReversed"> {{element.category}} </td>
+    </ng-container>
+
+    <!-- GL Account Column -->
+    <ng-container matColumnDef="glAccount">
+      <th mat-header-cell *matHeaderCellDef> {{ 'labels.inputs.GL Account' | translate }} </th>
+      <td mat-cell *matCellDef="let element" [class.reversed-text]="element.isReversed"> {{element.glAccount?.name}} ({{element.glAccount?.glCode}}) </td>
+    </ng-container>
+
+    <!-- Status Column -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef> {{ 'labels.inputs.Status' | translate }} </th>
+      <td mat-cell *matCellDef="let element" [ngClass]="[element.status.toLowerCase(), element.isReversed ? 'reversed-text' : '']"> {{element.status}} </td>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef> {{ 'labels.inputs.Actions' | translate }} </th>
+      <td mat-cell *matCellDef="let element">
+        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Actions" [disabled]="element.isReversed" class="action-button">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="showTransaction(element)">
+            <mat-icon><fa-icon icon="eye" size="sm"></fa-icon></mat-icon>
+            <span>{{ 'labels.text.View Transaction' | translate }}</span>
+          </button>
+          <button mat-menu-item (click)="viewJournalEntry(element)" *ngIf="!element.isReversed">
+            <mat-icon><fa-icon icon="table-cells" size="sm"></fa-icon></mat-icon>
+            <span>{{ 'tooltips.View Journal Entries' | translate }}</span>
+          </button>
+          <button mat-menu-item (click)="approveCost(element)" *ngIf="element.status === 'Pending'">
+            <mat-icon><fa-icon icon="check" size="sm"></fa-icon></mat-icon>
+            <span>{{ 'labels.buttons.Approve' | translate }}</span>
+          </button>
+          <button mat-menu-item (click)="rejectCost(element)" *ngIf="element.status === 'Pending'">
+            <mat-icon><fa-icon icon="times" size="sm"></fa-icon></mat-icon>
+            <span>{{ 'labels.buttons.Reject' | translate }}</span>
+          </button>
+          <button mat-menu-item (click)="reverseTransaction(element)" 
+                  *ngIf="(element.status === 'Paid' || element.status === 'Approved') && !element.isReversed && hasReversePermission"
+                  [disabled]="!hasReversePermission">
+            <mat-icon><fa-icon icon="undo" size="sm"></fa-icon></mat-icon>
+            <span>{{ 'labels.buttons.Reverse Transaction' | translate }}</span>
+          </button>
+        </mat-menu>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>

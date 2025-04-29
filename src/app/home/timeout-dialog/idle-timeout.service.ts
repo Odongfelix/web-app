@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
-import { interval, merge, fromEvent, Observable} from 'rxjs';
+import { interval, merge, fromEvent, Observable, Subject} from 'rxjs';
 import { takeUntil, repeat, map} from 'rxjs/operators';
 
 /**
@@ -10,20 +10,40 @@ import { takeUntil, repeat, map} from 'rxjs/operators';
     providedIn: 'root'
 })
 export class IdleTimeoutService {
-
-    // max timeout for an idle user
-    readonly timeoutDelay = environment.session.timeout.idleTimeout || 300000; // 5 minutes
+    private timeoutSubject = new Subject<void>();
+    private timer: any;
+    private events = ['mousemove', 'keydown', 'wheel', 'mousedown', 'scroll'];
+    private $signal = merge(...this.events.map(eventName => fromEvent(document, eventName)));
 
     // observable timeout
     readonly $onSessionTimeout: Observable<void>;
 
     constructor() {
-        const events = ['mousemove', 'keydown', 'wheel', 'mousedown', 'scroll'];
-        const $signal = merge(...events.map(eventName => fromEvent(document, eventName)));
-        this.$onSessionTimeout = interval(this.timeoutDelay).pipe(
-            takeUntil($signal),
-            map(() => undefined),
-            repeat()
-        );
+        this.$onSessionTimeout = this.timeoutSubject.asObservable();
+        this.startTimer();
+
+        // Reset timer on any user activity
+        this.$signal.subscribe(() => {
+            this.resetTimer();
+        });
+    }
+
+    private startTimer() {
+        this.timer = setTimeout(() => {
+            this.timeoutSubject.next();
+        }, environment.session.timeout.idleTimeout);
+    }
+
+    private resetTimer() {
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
+        this.startTimer();
+    }
+
+    public stopTimer() {
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
     }
 }

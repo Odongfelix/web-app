@@ -1,0 +1,283 @@
+<div class="container">
+  <div class="handling-costs-summary mat-elevation-z1">
+    <h3>{{ 'labels.headings.Handling Costs Summary' | translate }}</h3>
+
+    <!-- Administrative Costs -->
+    <div class="cost-category">
+      <div class="category-header">
+        <h4>{{ 'labels.headings.Administrative Costs' | translate }}</h4>
+        <button mat-raised-button color="primary" (click)="addCharge('administrative')">
+          <fa-icon icon="plus"></fa-icon>&nbsp;
+          {{ 'labels.buttons.Add' | translate }}
+        </button>
+      </div>
+      <table mat-table [dataSource]="handlingCosts.administrative" *ngIf="handlingCosts.administrative.length" class="mat-elevation-z1">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Name' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Amount' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.amount | number }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="collectedOn">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Collected On' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.chargeTimeType?.value }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Status' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">
+            <span class="status-indicator" [class.paid]="charge.paid">
+              {{ charge.paid ? 'Paid' : 'Pending' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Actions' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">
+            <button mat-icon-button [matMenuTriggerFor]="chargeMenu" aria-label="Actions">
+              <fa-icon icon="ellipsis-v"></fa-icon>
+            </button>
+            <mat-menu #chargeMenu="matMenu">
+              <button mat-menu-item (click)="viewCharge(charge.id)">
+                <fa-icon icon="eye"></fa-icon>&nbsp;
+                {{ 'labels.buttons.View' | translate }}
+              </button>
+              <button mat-menu-item (click)="editCharge(charge.id)">
+                <fa-icon icon="edit"></fa-icon>&nbsp;
+                {{ 'labels.buttons.Edit' | translate }}
+              </button>
+              <button mat-menu-item (click)="deleteCharge(charge.id)">
+                <fa-icon icon="trash"></fa-icon>&nbsp;
+                {{ 'labels.buttons.Delete' | translate }}
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <div class="category-total">
+        {{ 'labels.headings.Total' | translate }}: {{ calculateTotal(handlingCosts.administrative) | number }}
+      </div>
+      <p *ngIf="!handlingCosts.administrative.length" class="empty-message">
+        {{ 'labels.messages.No Administrative Costs' | translate }}
+      </p>
+    </div>
+
+    <!-- Processing Fees -->
+    <div class="cost-category">
+      <div class="category-header">
+        <h4>{{ 'labels.headings.Processing Fees' | translate }}</h4>
+        <button mat-raised-button color="primary" (click)="addCharge('processing')">
+          <fa-icon icon="plus"></fa-icon>&nbsp;
+          {{ 'labels.buttons.Add' | translate }}
+        </button>
+      </div>
+      <table mat-table [dataSource]="handlingCosts.processing" *ngIf="handlingCosts.processing.length" class="mat-elevation-z1">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Name' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Amount' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.amount | number }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="collectedOn">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Collected On' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.chargeTimeType?.value }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Status' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">
+            <span class="status-indicator" [class.paid]="charge.paid">
+              {{ charge.paid ? 'Paid' : 'Pending' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Actions' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">
+            <button mat-icon-button [matMenuTriggerFor]="chargeMenu" aria-label="Actions">
+              <fa-icon icon="ellipsis-v"></fa-icon>
+            </button>
+            <mat-menu #chargeMenu="matMenu">
+              <button mat-menu-item (click)="viewCharge(charge.id)">
+                <fa-icon icon="eye"></fa-icon>&nbsp;
+                {{ 'labels.buttons.View' | translate }}
+              </button>
+              <button mat-menu-item (click)="editCharge(charge.id)">
+                <fa-icon icon="edit"></fa-icon>&nbsp;
+                {{ 'labels.buttons.Edit' | translate }}
+              </button>
+              <button mat-menu-item (click)="deleteCharge(charge.id)">
+                <fa-icon icon="trash"></fa-icon>&nbsp;
+                {{ 'labels.buttons.Delete' | translate }}
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <div class="category-total">
+        {{ 'labels.headings.Total' | translate }}: {{ calculateTotal(handlingCosts.processing) | number }}
+      </div>
+      <p *ngIf="!handlingCosts.processing.length" class="empty-message">
+        {{ 'labels.messages.No Processing Fees' | translate }}
+      </p>
+    </div>
+
+    <!-- Documentation Charges -->
+    <div class="cost-category">
+      <div class="category-header">
+        <h4>{{ 'labels.headings.Documentation Charges' | translate }}</h4>
+        <button mat-raised-button color="primary" (click)="addCharge('documentation')">
+          <fa-icon icon="plus"></fa-icon>&nbsp;
+          {{ 'labels.buttons.Add' | translate }}
+        </button>
+      </div>
+      <table mat-table [dataSource]="handlingCosts.documentation" *ngIf="handlingCosts.documentation.length" class="mat-elevation-z1">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Name' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Amount' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.amount | number }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="collectedOn">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Collected On' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.chargeTimeType?.value }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Status' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">
+            <span class="status-indicator" [class.paid]="charge.paid">
+              {{ charge.paid ? 'Paid' : 'Pending' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Actions' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">
+            <button mat-icon-button [matMenuTriggerFor]="chargeMenu" aria-label="Actions">
+              <fa-icon icon="ellipsis-v"></fa-icon>
+            </button>
+            <mat-menu #chargeMenu="matMenu">
+              <button mat-menu-item (click)="viewCharge(charge.id)">
+                <fa-icon icon="eye"></fa-icon>&nbsp;
+                {{ 'labels.buttons.View' | translate }}
+              </button>
+              <button mat-menu-item (click)="editCharge(charge.id)">
+                <fa-icon icon="edit"></fa-icon>&nbsp;
+                {{ 'labels.buttons.Edit' | translate }}
+              </button>
+              <button mat-menu-item (click)="deleteCharge(charge.id)">
+                <fa-icon icon="trash"></fa-icon>&nbsp;
+                {{ 'labels.buttons.Delete' | translate }}
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <div class="category-total">
+        {{ 'labels.headings.Total' | translate }}: {{ calculateTotal(handlingCosts.documentation) | number }}
+      </div>
+      <p *ngIf="!handlingCosts.documentation.length" class="empty-message">
+        {{ 'labels.messages.No Documentation Charges' | translate }}
+      </p>
+    </div>
+
+    <!-- Other Operational Costs -->
+    <div class="cost-category">
+      <div class="category-header">
+        <h4>{{ 'labels.headings.Other Operational Costs' | translate }}</h4>
+        <button mat-raised-button color="primary" (click)="addCharge('other')">
+          <fa-icon icon="plus"></fa-icon>&nbsp;
+          {{ 'labels.buttons.Add' | translate }}
+        </button>
+      </div>
+      <table mat-table [dataSource]="handlingCosts.other" *ngIf="handlingCosts.other.length" class="mat-elevation-z1">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Name' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Amount' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.amount | number }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="collectedOn">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Collected On' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">{{ charge.chargeTimeType?.value }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Status' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">
+            <span class="status-indicator" [class.paid]="charge.paid">
+              {{ charge.paid ? 'Paid' : 'Pending' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>{{ 'labels.inputs.Actions' | translate }}</th>
+          <td mat-cell *matCellDef="let charge">
+            <button mat-icon-button [matMenuTriggerFor]="chargeMenu" aria-label="Actions">
+              <fa-icon icon="ellipsis-v"></fa-icon>
+            </button>
+            <mat-menu #chargeMenu="matMenu">
+              <button mat-menu-item (click)="viewCharge(charge.id)">
+                <fa-icon icon="eye"></fa-icon>&nbsp;
+                {{ 'labels.buttons.View' | translate }}
+              </button>
+              <button mat-menu-item (click)="editCharge(charge.id)">
+                <fa-icon icon="edit"></fa-icon>&nbsp;
+                {{ 'labels.buttons.Edit' | translate }}
+              </button>
+              <button mat-menu-item (click)="deleteCharge(charge.id)">
+                <fa-icon icon="trash"></fa-icon>&nbsp;
+                {{ 'labels.buttons.Delete' | translate }}
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <div class="category-total">
+        {{ 'labels.headings.Total' | translate }}: {{ calculateTotal(handlingCosts.other) | number }}
+      </div>
+      <p *ngIf="!handlingCosts.other.length" class="empty-message">
+        {{ 'labels.messages.No Other Operational Costs' | translate }}
+      </p>
+    </div>
+
+    <!-- Overall Total -->
+    <div class="overall-total mat-elevation-z1">
+      <h4>{{ 'labels.headings.Total Handling Costs' | translate }}</h4>
+      <span class="total-amount">{{ getOverallTotal() | number }}</span>
+    </div>
+  </div>
+</div> 
