@@ -18,11 +18,6 @@
       <img src="assets/images/RL%20JAIN%20LOGO.png" alt="{{ 'RL JAIN' | translate }} Logo" class="img-container" />
     </div>
 
-    <!-- Tenant Identifier Name -->
-<!--    <div fxLayout="row" fxLayoutAlign="center center" fxFlex="1 0 auto" *ngIf="displayTenantSelector()">-->
-<!--      <mifosx-tenant-selector></mifosx-tenant-selector>-->
-<!--    </div>-->
-
     <!-- Login Form -->
     <div fxLayout="row" fxFlex="3 0 auto" fxLayoutAlign="center start">
       <mifosx-login-form *ngIf="!resetPassword && !twoFactorAuthenticationRequired"></mifosx-login-form>
@@ -49,26 +44,48 @@
       >
     </mat-list>
 
-    <!-- Footer -->
-    <mifosx-footer></mifosx-footer>
-
-    <div fxLayout="row" fxLayoutAlign="end" class="m-b-20 m-r-10">
-      <a (click)="reloadSettings()"><fa-icon icon="refresh"></fa-icon></a>
+    <!-- Footer with Refresh Button -->
+    <div fxLayout="column" class="footer-container">
+      <mifosx-footer></mifosx-footer>
+      <div fxLayout="row" fxLayoutAlign="end" class="refresh-button">
+        <button mat-icon-button (click)="reloadSettings()" class="m-r-10">
+          <fa-icon icon="refresh"></fa-icon>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Content in 70%: Cover Image, Organization Name, and Description -->
+  <!-- Content in 70%: Event Slider -->
   <div fxFlex="70%" fxLayout="column" fxLayoutAlign="center center" fxHide.lt-sm class="cover">
-    <div class="cover-content">
-      <h1 class="mat-display-1 cover-title">{{ 'RL JAIN' | translate }}</h1>
-      <p class="mat-headline cover-description">
-        {{
-          'R.L Jain Ltd is a Tier Four (4) Microfinance Institution based in Kampala and established in 2016, regulated by the Uganda Microfinance Regulatory Authority (UMRA)'
-            | translate
-        }}.
-        {{ 'for more information reach out on our website' | translate }}
-        <a href="https://rljain.net/" target="_blank" class="cover-link">{{ 'https://rljain.net/' | translate }}</a>
-      </p>
+    <!-- Current Date Display -->
+    <div class="current-date-container">
+      <div class="current-date">
+        {{ currentDate | date:'EEEE, MMMM d, y' }}
+      </div>
+    </div>
+
+    <div class="event-slider">
+      <div class="event-content" [@slideAnimation]="currentEventIndex">
+        <div class="event-image" *ngIf="getCurrentEvent().image">
+          <img [src]="getCurrentEvent().image" [alt]="getCurrentEvent().title">
+        </div>
+        <div class="event-details">
+          <h1 class="mat-display-1 event-title">{{ getCurrentEvent().title | translate }}</h1>
+          <p class="mat-headline event-description">
+            {{ getCurrentEvent().description | translate }}
+          </p>
+          <p class="event-date">{{ getCurrentEvent().date | date }}</p>
+        </div>
+      </div>
+      <!-- Event Navigation Dots -->
+      <div class="event-nav-dots">
+        <span 
+          *ngFor="let event of events; let i = index" 
+          class="dot"
+          [class.active]="i === currentEventIndex"
+          (click)="goToSlide(i)">
+        </span>
+      </div>
     </div>
   </div>
 </div>
