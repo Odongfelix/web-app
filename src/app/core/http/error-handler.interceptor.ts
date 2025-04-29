@@ -1,6 +1,7 @@
 /** Angular Imports */
 import { Injectable } from '@angular/core';
 import { HttpEvent, HttpInterceptor, HttpHandler, HttpRequest, HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 /** rxjs Imports */
 import { Observable } from 'rxjs';
@@ -24,14 +25,26 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
 
   /**
    * @param {AlertService} alertService Alert Service.
+   * @param {Router} router Router for navigation.
    */
-  constructor(private alertService: AlertService) {  }
+  constructor(private alertService: AlertService,
+              private router: Router) { }
 
   /**
-   * Intercepts a Http request and adds a default error handler.
+   * Intercepts a http request and adds a default error handler.
    */
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    return next.handle(request).pipe(catchError(error => this.handleError(error)));
+    return next.handle(request)
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.error instanceof Error) {
+            this.handleError(error);
+          } else {
+            this.handleError(error);
+          }
+          throw error;
+        })
+      );
   }
 
   /**
@@ -50,23 +63,33 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
       log.error(`Request Error: ${errorMessage}`);
     }
 
+    // Only show one error at a time for authentication-related errors
     if (status === 401 || (environment.oauth.enabled && status === 400)) {
+      // Clear any existing alerts
+      this.alertService.clearAlert();
       this.alertService.alert({ type: 'Authentication Error', message: 'Invalid User Details. Please try again!' });
+      // Navigate to login page
+      this.router.navigate(['/login'], { replaceUrl: true });
     } else if (status === 403 && errorMessage === 'The provided one time token is invalid') {
+      this.alertService.clearAlert();
       this.alertService.alert({ type: 'Invalid Token', message: 'Invalid Token. Please try again!' });
     } else if (status === 400) {
+      this.alertService.clearAlert();
       this.alertService.alert({ type: 'Bad Request', message: errorMessage || 'Invalid parameters were passed in the request!' });
     } else if (status === 403) {
+      this.alertService.clearAlert();
       this.alertService.alert({ type: 'Unauthorized Request', message: errorMessage || 'You are not authorized for this request!' });
     } else if (status === 404) {
+      this.alertService.clearAlert();
       this.alertService.alert({ type: 'Resource does not exist', message: errorMessage || 'Resource does not exist!' });
-    }  else if (status === 500) {
+    } else if (status === 500) {
+      this.alertService.clearAlert();
       this.alertService.alert({ type: 'Internal Server Error', message: 'Internal Server Error. Please try again later.' });
     } else {
+      this.alertService.clearAlert();
       this.alertService.alert({ type: 'Unknown Error', message: 'Unknown Error. Please try again later.' });
     }
 
     throw response;
   }
-
 }

@@ -23,6 +23,7 @@ import { AuthenticationService } from './core/authentication/authentication.serv
 import { SettingsService } from './settings/settings.service';
 import { IdleTimeoutService } from './home/timeout-dialog/idle-timeout.service';
 import { SessionTimeoutDialogComponent } from './home/timeout-dialog/session-timeout-dialog.component';
+import { RouteStorageService } from './core/route-storage/route-storage.service';
 
 /** Custom Items */
 import { Alert } from './core/alert/alert.model';
@@ -100,6 +101,7 @@ export class WebAppComponent implements OnInit {
    * @param {Dates} dateUtils Dates service.
    * @param {IdleTimeoutService} idle Idle timeout service.
    * @param {MatDialog} dialog Dialog component.
+   * @param {RouteStorageService} routeStorageService Route Storage Service.
    */
   constructor(private router: Router,
               private activatedRoute: ActivatedRoute,
@@ -113,7 +115,8 @@ export class WebAppComponent implements OnInit {
               private themingService: ThemingService,
               private dateUtils: Dates,
               private idle: IdleTimeoutService,
-              private dialog: MatDialog) { }
+              private dialog: MatDialog,
+              private routeStorageService: RouteStorageService) { }
 
   @HostBinding('class') public cssClass: string;
 
@@ -219,9 +222,14 @@ export class WebAppComponent implements OnInit {
     if (environment.session.timeout.idleTimeout > 0) {
       this.idle.$onSessionTimeout.subscribe(() => {
         if (this.authenticationService.isAuthenticated()) {
+          // Store the current route before showing timeout dialog
+          this.routeStorageService.storeCurrentRoute();
           this.alertService.alert({type: 'Session timeout', message: this.translateService.instant('labels.text.Session timed out')});
           this.dialog.open(SessionTimeoutDialogComponent);
-          this.logout();
+          // Immediately logout and redirect
+          this.authenticationService.logout().subscribe(() => {
+            this.router.navigate(['/login'], { replaceUrl: true });
+          });
         }
       });
     }

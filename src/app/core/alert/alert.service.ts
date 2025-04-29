@@ -1,7 +1,10 @@
 /** Angular Imports */
-import { Injectable, EventEmitter } from '@angular/core';
+import { Injectable } from '@angular/core';
 
-/** Custom Model */
+/** rxjs Imports */
+import { Subject } from 'rxjs';
+
+/** Custom Models */
 import { Alert } from './alert.model';
 
 /**
@@ -12,22 +15,25 @@ import { Alert } from './alert.model';
 })
 export class AlertService {
 
+  /** Alert subject. */
+  private alertSubject = new Subject<Alert>();
+
   /** Alert event. */
-  public alertEvent: EventEmitter<Alert>;
+  public alertEvent = this.alertSubject.asObservable();
 
   /**
-   * Initializes alert event.
+   * Sends alert to subscribers.
+   * @param {Alert} alert Alert.
    */
-  constructor() {
-    this.alertEvent = new EventEmitter();
+  alert(alert: Alert) {
+    this.alertSubject.next(alert);
   }
 
   /**
-   * Emits an alert event.
-   * @param {Alert} alertEvent Alert event.
+   * Clears any existing alerts.
    */
-  alert(alertEvent: Alert) {
-    this.alertEvent.emit(alertEvent);
+  clearAlert() {
+    this.alertSubject.next(null);
   }
 
 }
