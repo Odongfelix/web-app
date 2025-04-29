@@ -29,6 +29,15 @@
             </mat-error>
           </mat-form-field>
 
+          <mat-form-field fxFlex="48%" *ngIf="showCurrencyRate">
+            <mat-label>{{ 'Exchange Rate' | translate }}</mat-label>
+            <input type="number" matInput formControlName="currencyRate" required>
+            <mat-error *ngIf="journalEntryForm.controls.currencyRate.hasError('required')">
+              {{ 'labels.inputs.Exchange Rate' | translate }} {{ 'labels.commons.is' | translate }}
+              <strong>{{ 'labels.commons.required' | translate }}</strong>
+            </mat-error>
+          </mat-form-field>
+
           <div
             fxFlexFill
             fxLayout="row wrap"

@@ -10,6 +10,8 @@ import { SettingsService } from 'app/settings/settings.service';
 import { Dates } from 'app/core/utils/dates';
 import { PopoverService } from '../../configuration-wizard/popover/popover.service';
 import { ConfigurationWizardService } from '../../configuration-wizard/configuration-wizard.service';
+import { Currency } from 'app/shared/models/general.model';
+import { environment } from 'environments/environment';
 
 /** Custom Dialog Component */
 import { NextStepDialogComponent } from '../../configuration-wizard/next-step-dialog/next-step-dialog.component';
@@ -32,11 +34,19 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
   /** Office data. */
   officeData: any;
   /** Currency data. */
-  currencyData: any;
+  currencyData: Currency[];
   /** Payment type data. */
   paymentTypeData: any;
   /** Gl Account data. */
   glAccountData: any;
+  /** Selected currency */
+  selectedCurrency: Currency;
+  /** Show currency rate field */
+  showCurrencyRate = false;
+  /** Default currency code */
+  defaultCurrency = 'UGX';
+  /** Total debit amount */
+  totalDebitAmount = 0;
 
   /* Reference of create journal form */
   @ViewChild('createJournalFormRef') createJournalFormRef: ElementRef<any>;
@@ -101,6 +111,7 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
     this.journalEntryForm = this.formBuilder.group({
       'officeId': ['', Validators.required],
       'currencyCode': ['', Validators.required],
+      'currencyRate': [''],
       'debits': this.formBuilder.array([this.createAffectedGLEntryForm()]),
       'credits': this.formBuilder.array([this.createAffectedGLEntryForm()]),
       'referenceNumber': [''],
@@ -113,6 +124,58 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
       'bankNumber': [''],
       'comments': ['']
     });
+
+    // Subscribe to currency changes
+    this.journalEntryForm.get('currencyCode').valueChanges.subscribe(currencyCode => {
+      this.selectedCurrency = this.currencyData.find((currency: Currency) => currency.code === currencyCode);
+      this.showCurrencyRate = this.selectedCurrency && this.selectedCurrency.code !== this.defaultCurrency;
+      
+      if (this.showCurrencyRate) {
+        this.journalEntryForm.get('currencyRate').enable();
+        this.journalEntryForm.get('currencyRate').setValidators([Validators.required]);
+      } else {
+        this.journalEntryForm.get('currencyRate').disable();
+        this.journalEntryForm.get('currencyRate').clearValidators();
+        this.journalEntryForm.get('currencyRate').setValue('');
+        this.journalEntryForm.get('comments').setValue('');
+      }
+      this.journalEntryForm.get('currencyRate').updateValueAndValidity();
+    });
+
+    // Subscribe to currency rate changes
+    this.journalEntryForm.get('currencyRate').valueChanges.subscribe(rate => {
+      if (this.showCurrencyRate && rate) {
+        this.updateDescriptionWithRate(rate);
+      }
+    });
+
+    // Subscribe to debit amount changes
+    this.debits.valueChanges.subscribe(() => {
+      this.calculateTotalDebitAmount();
+      if (this.showCurrencyRate && this.journalEntryForm.get('currencyRate').value) {
+        this.updateDescriptionWithRate(this.journalEntryForm.get('currencyRate').value);
+      }
+    });
+  }
+
+  /**
+   * Calculates the total debit amount
+   */
+  calculateTotalDebitAmount() {
+    this.totalDebitAmount = this.debits.controls.reduce((total, control) => {
+      return total + (Number(control.get('amount').value) || 0);
+    }, 0);
+  }
+
+  /**
+   * Updates the description with the amount and rate information
+   * @param rate The currency rate
+   */
+  updateDescriptionWithRate(rate: number) {
+    if (this.totalDebitAmount > 0) {
+      const description = `$${this.totalDebitAmount} at the rate ${rate}`;
+      this.journalEntryForm.get('comments').setValue(description);
+    }
   }
 
   /**
@@ -159,6 +222,11 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
       journalEntry.transactionDate = this.dateUtils.formatDate(journalEntry.transactionDate, this.settingsService.dateFormat);
     }
 
+    // Only include currency rate if it's enabled and has a value
+    if (!this.showCurrencyRate || !journalEntry.currencyRate) {
+      delete journalEntry.currencyRate;
+    }
+
     journalEntry.locale = this.settingsService.language.code;
     journalEntry.dateFormat = this.settingsService.dateFormat;
 
@@ -198,7 +266,7 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Next Step (Create journal entry Accounting Page) Configuration Wizard.
+   * Previous Step (Create journal entry Accounting Page) Configuration Wizard.
    */
   previousStep() {
     this.router.navigate(['/accounting']);

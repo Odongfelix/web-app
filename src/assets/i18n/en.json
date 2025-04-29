@@ -13,7 +13,21 @@
       "GL Account": "GL Account",
       "Status": "Status",
       "Actions": "Actions",
-      "Notes": "Notes"
+      "Notes": "Notes",
+      "Exchange Rate": "Exchange Rate",
+      "Currency": "Currency",
+      "Office": "Office",
+      "Reference Number": "Reference Number",
+      "Transaction Date": "Transaction Date",
+      "Payment Type": "Payment Type",
+      "Account Number": "Account Number",
+      "Cheque Number": "Cheque Number",
+      "Routing Code": "Routing Code",
+      "Receipt Number": "Receipt Number",
+      "Bank Number": "Bank Number",
+      "Comments": "Comments",
+      "Debit Amount": "Debit Amount",
+      "Credit Amount": "Credit Amount"
     },
     "buttons": {
       "Add New Cost": "Add New Cost",
