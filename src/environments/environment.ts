@@ -83,7 +83,7 @@ export const environment: Environment = {
   waitTimeForCOBCatchUp: window['env']['waitTimeForCOBCatchUp'] || 30,
   session: {
     timeout: {
-      idleTimeout: 120000, // 2 minute in milliseconds
+      idleTimeout: 1800000, // 30 minute in milliseconds
     }
   },
   defaultCurrency: window['env']['defaultCurrency'] || 'USD'
