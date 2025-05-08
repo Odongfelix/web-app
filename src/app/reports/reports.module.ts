@@ -5,6 +5,7 @@ import { DecimalPipe } from '@angular/common';
 /** Custom Modules */
 import { SharedModule } from '../shared/shared.module';
 import { ReportsRoutingModule } from 'app/reports/reports-routing.module';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 
 /** Custom Components */
 import { ReportsComponent } from './reports.component';
@@ -23,7 +24,8 @@ import { XBRLReportComponent } from './xbrl-report/xbrl-report.component';
 @NgModule({
   imports: [
     SharedModule,
-    ReportsRoutingModule
+    ReportsRoutingModule,
+    NgxMatSelectSearchModule
   ],
   declarations: [
     ReportsComponent,

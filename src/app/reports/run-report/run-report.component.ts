@@ -1,17 +1,23 @@
 /** Angular Imports */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+
+/** rxjs Imports */
+import { ReplaySubject, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 /** Custom Services */
 import { ReportsService } from '../reports.service';
 import { SettingsService } from 'app/settings/settings.service';
+import { AccountingService } from 'app/accounting/accounting.service';
 
 /** Custom Models */
 import { ReportParameter } from '../common-models/report-parameter.model';
 import { SelectOption } from '../common-models/select-option.model';
 import { Dates } from 'app/core/utils/dates';
 import { GlobalConfiguration } from 'app/system/configurations/global-configurations-tab/configuration.model';
+import { GLAccount } from 'app/shared/models/general.model';
 
 import * as XLSX from 'xlsx';
 import { AlertService } from 'app/core/alert/alert.service';
@@ -24,7 +30,7 @@ import { AlertService } from 'app/core/alert/alert.service';
   templateUrl: './run-report.component.html',
   styleUrls: ['./run-report.component.scss']
 })
-export class RunReportComponent implements OnInit {
+export class RunReportComponent implements OnInit, OnDestroy {
 
   /** Minimum date allowed. */
   minDate = new Date(2000, 0, 1);
@@ -63,6 +69,14 @@ export class RunReportComponent implements OnInit {
   outputTypeOptions: any[] = [];
 
   isProcessing = false;
+  
+  /** GL Account data */
+  glAccountData: GLAccount[] = [];
+  
+  /** For custom GL account selector */
+  glAccountFilterCtrl: UntypedFormControl = new UntypedFormControl('');
+  filteredGLAccounts: ReplaySubject<GLAccount[]> = new ReplaySubject<GLAccount[]>(1);
+  private _onDestroy = new Subject<void>();
 
   /**
    * Fetches report specifications from route params and retrieves report parameters data from `resolve`.
@@ -70,11 +84,13 @@ export class RunReportComponent implements OnInit {
    * @param {ReportsService} reportsService ReportsService
    * @param {SettingsService} settingsService Settings Service
    * @param {Dates} dateUtils Date Utils
+   * @param {AccountingService} accountingService Accounting Service
    */
   constructor(private route: ActivatedRoute,
               private reportsService: ReportsService,
               private settingsService: SettingsService,
               private alertService: AlertService,
+              private accountingService: AccountingService,
               private dateUtils: Dates) {
     this.report.name = this.route.snapshot.params['name'];
     this.route.queryParams.subscribe((queryParams: { type: any, id: any }) => {
@@ -107,7 +123,83 @@ export class RunReportComponent implements OnInit {
    */
   ngOnInit() {
     this.maxDate = this.settingsService.maxAllowedDate;
+    // Fetch GL accounts if needed
+    this.fetchGLAccounts();
     this.createRunReportForm();
+    
+    // Set up filter for GL accounts
+    this.setupGLAccountFilter();
+  }
+  
+  /**
+   * Set up filter for GL account selector
+   */
+  setupGLAccountFilter() {
+    // Set initial filtered GL accounts
+    this.filteredGLAccounts.next(this.glAccountData.slice());
+    
+    // Listen for search field value changes
+    this.glAccountFilterCtrl.valueChanges
+      .pipe(takeUntil(this._onDestroy))
+      .subscribe(() => {
+        this.filterGLAccounts();
+      });
+  }
+  
+  /**
+   * Filter GL accounts based on search term
+   */
+  filterGLAccounts() {
+    if (!this.glAccountData) {
+      return;
+    }
+    
+    // Get search keyword
+    let search = this.glAccountFilterCtrl.value;
+    if (!search) {
+      this.filteredGLAccounts.next(this.glAccountData.slice());
+      return;
+    } else {
+      search = search.toLowerCase();
+    }
+    
+    // Filter GL accounts
+    this.filteredGLAccounts.next(
+      this.glAccountData.filter(glAccount => 
+        glAccount.name.toLowerCase().indexOf(search) > -1 ||
+        glAccount.glCode.toLowerCase().indexOf(search) > -1
+      )
+    );
+  }
+
+  /**
+   * Fetch GL accounts for selector
+   */
+  fetchGLAccounts() {
+    // Check if any parameter name contains GL Account
+    const hasGLAccountParam = this.paramData.some(param => 
+      param.label.toLowerCase().includes('gl account') || 
+      param.name.toLowerCase().includes('glaccount') ||
+      param.name.toLowerCase().includes('glaccountid'));
+
+    if (hasGLAccountParam) {
+      this.accountingService.getGlAccounts().subscribe((glAccounts: GLAccount[]) => {
+        this.glAccountData = glAccounts;
+        // Initialize filtered GL accounts
+        this.filteredGLAccounts.next(this.glAccountData.slice());
+      });
+    }
+  }
+
+  /**
+   * Checks if parameter is a GL account parameter
+   * @param param Report parameter
+   * @returns true if parameter is for GL account
+   */
+  isGLAccountParameter(param: ReportParameter): boolean {
+    return param.label.toLowerCase().includes('gl account') || 
+           param.name.toLowerCase().includes('glaccount') ||
+           param.name.toLowerCase().includes('glaccountid');
   }
 
   /**
@@ -119,7 +211,7 @@ export class RunReportComponent implements OnInit {
       (param: ReportParameter) => {
         if (!param.parentParameterName) { // Non Child Parameter
           this.reportForm.addControl(param.name, new UntypedFormControl('', Validators.required));
-          if (param.displayType === 'select') {
+          if (param.displayType === 'select' && !this.isGLAccountParameter(param)) {
             this.fetchSelectOptions(param, param.name);
           }
         } else { // Child Parameter
@@ -188,7 +280,7 @@ export class RunReportComponent implements OnInit {
           } else {
             this.reportForm.addControl(child.name, new UntypedFormControl('', Validators.required));
           }
-          if (child.displayType === 'select') {
+          if (child.displayType === 'select' && !this.isGLAccountParameter(child)) {
             const inputstring = `${child.name}?${param.inputName}=${option.id}`;
             this.fetchSelectOptions(child, inputstring);
           }
@@ -236,7 +328,7 @@ export class RunReportComponent implements OnInit {
           formattedResponse[newKey] = value;
           break;
         case 'select':
-          formattedResponse[newKey] = (value as any).id;
+          formattedResponse[newKey] = (value as any).id || value;
           break;
         case 'date':
           if (this.isTableReport()) {
@@ -378,5 +470,13 @@ export class RunReportComponent implements OnInit {
         );
       }
     }
+  }
+
+  /**
+   * Implements OnDestroy interface
+   */
+  ngOnDestroy() {
+    this._onDestroy.next();
+    this._onDestroy.complete();
   }
 }

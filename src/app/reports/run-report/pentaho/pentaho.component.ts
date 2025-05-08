@@ -44,6 +44,28 @@ export class PentahoComponent implements OnChanges {
   }
 
   /**
+   * Gets GL code from form data if available
+   */
+  private getGLCode(): string {
+    const formData = this.dataObject.formData;
+    
+    // Check various possible parameter names for GL account
+    for (const key in formData) {
+      const keyLower = key.toLowerCase().replace(/\s+/g, '');
+      if (keyLower.includes('glaccount') || 
+          keyLower.includes('glaccountid') || 
+          keyLower === 'r_gl') {
+        const value = formData[key];
+        
+        // If it's a number (ID value), use it directly
+        return value.toString();
+      }
+    }
+    
+    return '';
+  }
+
+  /**
    * Initializes the report based on the output type
    */
   getRunReportData() {
@@ -62,7 +84,10 @@ export class PentahoComponent implements OnChanges {
       if (outputType === 'XLS' || outputType === 'XLSX' || outputType === 'CSV') {
         // For Excel/CSV formats, trigger download
         const extension = outputType.toLowerCase();
-        const fileName = `${this.dataObject.report.name}.${extension}`;
+        const glCode = this.getGLCode();
+        const fileName = glCode ? 
+          `${this.dataObject.report.name}_${glCode}.${extension}` : 
+          `${this.dataObject.report.name}.${extension}`;
         const link = document.createElement('a');
         link.href = URL.createObjectURL(file);
         link.download = fileName;

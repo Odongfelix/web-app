@@ -31,26 +31,45 @@
               </mat-error>
             </mat-form-field>
 
-            <mat-form-field fxFlex *ngSwitchCase="'select'">
-              <mat-label>{{ param.label }}</mat-label>
-              <mat-select required [formControlName]="param.name" (openedChange)="onSelectOpened(param, $event)">
-                <div class="select-search">
-                  <mat-form-field class="search-field">
-                    <input matInput id="search-{{param.name}}" placeholder="Search..." (keyup)="onSelectKeydown($event, param)">
-                  </mat-form-field>
-                </div>
-                <mat-option *ngFor="let option of param.filteredOptions || param.selectOptions" [value]="option">
-                  {{ option.name }}
-                </mat-option>
-                <mat-option *ngIf="(param.filteredOptions && param.filteredOptions.length === 0)" disabled>
-                  No matching options found
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="reportForm.controls[param.name].hasError('required')">
-                {{ param.label }} {{ 'labels.commons.is' | translate }}
-                <strong>{{ 'labels.commons.required' | translate }}</strong>
-              </mat-error>
-            </mat-form-field>
+            <ng-container *ngSwitchCase="'select'">
+              <!-- Custom GL Account Selector for Reports -->
+              <mat-form-field fxFlex *ngIf="isGLAccountParameter(param)">
+                <mat-label>{{ param.label }}</mat-label>
+                <mat-select required [formControlName]="param.name">
+                  <mat-option>
+                    <ngx-mat-select-search [formControl]="glAccountFilterCtrl" placeholderLabel="Search..."></ngx-mat-select-search>
+                  </mat-option>
+                  <mat-option *ngFor="let glAccount of filteredGLAccounts | async" [value]="glAccount.id">
+                    {{ '(' + glAccount.glCode + ') ' + glAccount.name }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="reportForm.controls[param.name].hasError('required')">
+                  {{ param.label }} {{ 'labels.commons.is' | translate }}
+                  <strong>{{ 'labels.commons.required' | translate }}</strong>
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field fxFlex *ngIf="!isGLAccountParameter(param)">
+                <mat-label>{{ param.label }}</mat-label>
+                <mat-select required [formControlName]="param.name" (openedChange)="onSelectOpened(param, $event)">
+                  <div class="select-search">
+                    <mat-form-field class="search-field">
+                      <input matInput id="search-{{param.name}}" placeholder="Search..." (keyup)="onSelectKeydown($event, param)">
+                    </mat-form-field>
+                  </div>
+                  <mat-option *ngFor="let option of param.filteredOptions || param.selectOptions" [value]="option">
+                    {{ option.name }}
+                  </mat-option>
+                  <mat-option *ngIf="(param.filteredOptions && param.filteredOptions.length === 0)" disabled>
+                    No matching options found
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="reportForm.controls[param.name].hasError('required')">
+                  {{ param.label }} {{ 'labels.commons.is' | translate }}
+                  <strong>{{ 'labels.commons.required' | translate }}</strong>
+                </mat-error>
+              </mat-form-field>
+            </ng-container>
           </ng-container>
         </ng-container>
 
