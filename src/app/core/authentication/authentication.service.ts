@@ -258,6 +258,8 @@ export class AuthenticationService {
     this.setCredentials();
     this.resetDialog();
     this.userLoggedIn = false;
+    // Clear the stored route when logging out
+    this.routeStorageService.clearLastRoute();
     return of(true);
   }
 

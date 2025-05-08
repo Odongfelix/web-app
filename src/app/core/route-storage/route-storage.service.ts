@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { AuthenticationService } from '../authentication/authentication.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,7 +27,8 @@ export class RouteStorageService {
   storeCurrentRoute(route?: string): void {
     const currentRoute = route || this.router.url;
     if (currentRoute && !currentRoute.includes('/login') && !currentRoute.includes('/logout')) {
-      localStorage.setItem(this.STORAGE_KEY, currentRoute);
+      // Use sessionStorage instead of localStorage to ensure routes don't persist across sessions
+      sessionStorage.setItem(this.STORAGE_KEY, currentRoute);
     }
   }
 
@@ -35,13 +37,14 @@ export class RouteStorageService {
    * @returns {string} The last route before session timeout
    */
   getLastRoute(): string {
-    return localStorage.getItem(this.STORAGE_KEY) || '/';
+    return sessionStorage.getItem(this.STORAGE_KEY) || '/';
   }
 
   /**
    * Clears the stored route
    */
   clearLastRoute(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
+    sessionStorage.removeItem(this.STORAGE_KEY);
+    localStorage.removeItem(this.STORAGE_KEY); // Also clear from localStorage for backward compatibility
   }
 } 
