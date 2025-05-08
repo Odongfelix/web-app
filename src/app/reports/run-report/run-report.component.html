@@ -32,15 +32,23 @@
             </mat-form-field>
 
             <ng-container *ngSwitchCase="'select'">
-              <!-- Custom GL Account Selector for Reports -->
+              <!-- Custom GL Account Selector -->
               <mat-form-field fxFlex *ngIf="isGLAccountParameter(param)">
                 <mat-label>{{ param.label }}</mat-label>
-                <mat-select required [formControlName]="param.name">
+                <mat-select required [formControlName]="param.name" (openedChange)="onGLSelectOpened($event)">
                   <mat-option>
-                    <ngx-mat-select-search [formControl]="glAccountFilterCtrl" placeholderLabel="Search..."></ngx-mat-select-search>
+                    <ngx-mat-select-search 
+                      [formControl]="glAccountFilterCtrl" 
+                      placeholderLabel="Search by name or code..."
+                      [clearSearchInput]="false"
+                      (keyup)="onGLFilterKeyUp($event)">
+                    </ngx-mat-select-search>
                   </mat-option>
                   <mat-option *ngFor="let glAccount of filteredGLAccounts | async" [value]="glAccount.id">
                     {{ '(' + glAccount.glCode + ') ' + glAccount.name }}
+                  </mat-option>
+                  <mat-option *ngIf="(filteredGLAccounts | async)?.length === 0" disabled>
+                    No matching GL accounts found
                   </mat-option>
                 </mat-select>
                 <mat-error *ngIf="reportForm.controls[param.name].hasError('required')">
@@ -49,7 +57,67 @@
                 </mat-error>
               </mat-form-field>
 
-              <mat-form-field fxFlex *ngIf="!isGLAccountParameter(param)">
+              <!-- Custom App User Selector -->
+              <mat-form-field fxFlex *ngIf="isAppUserParameter(param)">
+                <mat-label>{{ param.label }}</mat-label>
+                <mat-select required [formControlName]="param.name" (openedChange)="onAppUserSelectOpened($event)">
+                  <mat-option>
+                    <ngx-mat-select-search 
+                      [formControl]="appUserFilterCtrl" 
+                      placeholderLabel="Search by name..."
+                      [clearSearchInput]="false"
+                      (keyup)="onAppUserFilterKeyUp($event)">
+                    </ngx-mat-select-search>
+                  </mat-option>
+                  <mat-option *ngFor="let appUser of filteredAppUsers | async" [value]="appUser.id">
+                    {{ appUser.displayName }}
+                  </mat-option>
+                  <mat-option *ngIf="(filteredAppUsers | async)?.length === 0" disabled>
+                    No matching users found
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="reportForm.controls[param.name].hasError('required')">
+                  {{ param.label }} {{ 'labels.commons.is' | translate }}
+                  <strong>{{ 'labels.commons.required' | translate }}</strong>
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Custom Office Selector -->
+              <mat-form-field fxFlex *ngIf="isOfficeParameter(param) && paramFilterCtrls[param.name]">
+                <mat-label>{{ param.label }}</mat-label>
+                <mat-select required [formControlName]="param.name">
+                  <mat-option>
+                    <ngx-mat-select-search [formControl]="paramFilterCtrls[param.name]" placeholderLabel="Search..."></ngx-mat-select-search>
+                  </mat-option>
+                  <mat-option *ngFor="let option of filteredOptions[param.name] | async" [value]="option">
+                    {{ option.name }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="reportForm.controls[param.name].hasError('required')">
+                  {{ param.label }} {{ 'labels.commons.is' | translate }}
+                  <strong>{{ 'labels.commons.required' | translate }}</strong>
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Custom Entry Filter Selector -->
+              <mat-form-field fxFlex *ngIf="isEntryFilterParameter(param) && paramFilterCtrls[param.name]">
+                <mat-label>{{ param.label }}</mat-label>
+                <mat-select required [formControlName]="param.name">
+                  <mat-option>
+                    <ngx-mat-select-search [formControl]="paramFilterCtrls[param.name]" placeholderLabel="Search..."></ngx-mat-select-search>
+                  </mat-option>
+                  <mat-option *ngFor="let option of filteredOptions[param.name] | async" [value]="option">
+                    {{ option.name }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="reportForm.controls[param.name].hasError('required')">
+                  {{ param.label }} {{ 'labels.commons.is' | translate }}
+                  <strong>{{ 'labels.commons.required' | translate }}</strong>
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Default Select with Search -->
+              <mat-form-field fxFlex *ngIf="!isGLAccountParameter(param) && !isOfficeParameter(param) && !isEntryFilterParameter(param) && !isAppUserParameter(param)">
                 <mat-label>{{ param.label }}</mat-label>
                 <mat-select required [formControlName]="param.name" (openedChange)="onSelectOpened(param, $event)">
                   <div class="select-search">
