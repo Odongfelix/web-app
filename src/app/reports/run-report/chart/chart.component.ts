@@ -9,6 +9,7 @@ import { ChartData } from '../../common-models/chart-data.model';
 
 /** Charting Imports */
 import Chart from 'chart.js';
+import * as XLSX from 'xlsx';
 
 /**
  * Chart Component
@@ -136,4 +137,40 @@ export class ChartComponent implements OnChanges {
     return `rgb(${r},${g},${b},0.6)`;
   }
 
+  /**
+   * Exports the chart data to Excel
+   */
+  exportToExcel(): void {
+    if (!this.inputData) {
+      return;
+    }
+
+    const fileName = `${this.dataObject.report.name}.xlsx`;
+    
+    // Create array of objects with the data
+    const data = [];
+    for (let i = 0; i < this.inputData.keys.length; i++) {
+      data.push({
+        [this.inputData.keysLabel]: this.inputData.keys[i],
+        [this.inputData.valuesLabel]: this.inputData.values[i]
+      });
+    }
+
+    // Create worksheet
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+
+    // Set column widths
+    const wscols = [
+      { wch: Math.max(...this.inputData.keys.map(k => k.length), this.inputData.keysLabel.length) + 5 },
+      { wch: Math.max(...this.inputData.values.map(v => v.toString().length), this.inputData.valuesLabel.length) + 5 }
+    ];
+    ws['!cols'] = wscols;
+
+    // Create workbook and add the worksheet
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Chart Data');
+
+    // Save the file
+    XLSX.writeFile(wb, fileName);
+  }
 }
