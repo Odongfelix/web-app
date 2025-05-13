@@ -480,6 +480,12 @@ export class RunReportComponent implements OnInit, OnDestroy {
 
       const param: ReportParameter = this.paramData
         .find((_entry: any) => _entry.name === key);
+      
+      // Skip if this is an app user parameter with 'all' value
+      if (param && this.isAppUserParameter(param) && value === 'all') {
+        continue;
+      }
+
       newKey = this.isPentahoReport() ? param.pentahoName : param.inputName;
       switch (param.displayType) {
         case 'text':

@@ -69,6 +69,7 @@
                       (keyup)="onAppUserFilterKeyUp($event)">
                     </ngx-mat-select-search>
                   </mat-option>
+                  <mat-option [value]="'all'">All</mat-option>
                   <mat-option *ngFor="let appUser of filteredAppUsers | async" [value]="appUser.id">
                     {{ appUser.displayName }}
                   </mat-option>
