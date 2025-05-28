@@ -129,7 +129,7 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
     this.journalEntryForm.get('currencyCode').valueChanges.subscribe(currencyCode => {
       this.selectedCurrency = this.currencyData.find((currency: Currency) => currency.code === currencyCode);
       this.showCurrencyRate = this.selectedCurrency && this.selectedCurrency.code !== this.defaultCurrency;
-      
+
       if (this.showCurrencyRate) {
         this.journalEntryForm.get('currencyRate').enable();
         this.journalEntryForm.get('currencyRate').setValidators([Validators.required]);
@@ -217,7 +217,7 @@ export class CreateJournalEntryComponent implements OnInit, AfterViewInit {
    */
   submit() {
     const journalEntry = this.journalEntryForm.value;
-    
+
     if (journalEntry.transactionDate instanceof Date) {
       journalEntry.transactionDate = this.dateUtils.formatDate(journalEntry.transactionDate, this.settingsService.dateFormat);
     }

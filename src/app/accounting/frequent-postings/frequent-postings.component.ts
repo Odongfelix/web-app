@@ -175,6 +175,7 @@ export class FrequentPostingsComponent implements OnInit {
     if (journalEntry.transactionDate instanceof Date) {
       journalEntry.transactionDate = this.dateUtils.formatDate(journalEntry.transactionDate, this.settingsService.dateFormat);
     }
+    //todo add exchange rate here
     this.accountingService.createJournalEntry(journalEntry).subscribe(response => {
       this.router.navigate(['../transactions/view', response.transactionId], { relativeTo: this.route });
     });
