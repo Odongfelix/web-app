@@ -1,17 +1,23 @@
 /** Angular Imports */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+
+/** rxjs Imports */
+import { ReplaySubject, Subject } from 'rxjs';
+import { takeUntil, debounceTime } from 'rxjs/operators';
 
 /** Custom Services */
 import { ReportsService } from '../reports.service';
 import { SettingsService } from 'app/settings/settings.service';
+import { AccountingService } from 'app/accounting/accounting.service';
 
 /** Custom Models */
 import { ReportParameter } from '../common-models/report-parameter.model';
 import { SelectOption } from '../common-models/select-option.model';
 import { Dates } from 'app/core/utils/dates';
 import { GlobalConfiguration } from 'app/system/configurations/global-configurations-tab/configuration.model';
+import { GLAccount } from 'app/shared/models/general.model';
 
 import * as XLSX from 'xlsx';
 import { AlertService } from 'app/core/alert/alert.service';
@@ -24,7 +30,7 @@ import { AlertService } from 'app/core/alert/alert.service';
   templateUrl: './run-report.component.html',
   styleUrls: ['./run-report.component.scss']
 })
-export class RunReportComponent implements OnInit {
+export class RunReportComponent implements OnInit, OnDestroy {
 
   /** Minimum date allowed. */
   minDate = new Date(2000, 0, 1);
@@ -63,6 +69,26 @@ export class RunReportComponent implements OnInit {
   outputTypeOptions: any[] = [];
 
   isProcessing = false;
+  
+  /** GL Account data */
+  glAccountData: GLAccount[] = [];
+  
+  /** For custom filters */
+  glAccountFilterCtrl: UntypedFormControl = new UntypedFormControl('');
+  filteredGLAccounts: ReplaySubject<GLAccount[]> = new ReplaySubject<GLAccount[]>(1);
+  
+  /** App User data */
+  appUserData: any[] = [];
+  
+  /** For app user filter */
+  appUserFilterCtrl: UntypedFormControl = new UntypedFormControl('');
+  filteredAppUsers: ReplaySubject<any[]> = new ReplaySubject<any[]>(1);
+  
+  // Parameter type maps to track filter controls and filtered data
+  paramFilterCtrls: { [key: string]: UntypedFormControl } = {};
+  filteredOptions: { [key: string]: ReplaySubject<any[]> } = {};
+  
+  private _onDestroy = new Subject<void>();
 
   /**
    * Fetches report specifications from route params and retrieves report parameters data from `resolve`.
@@ -70,11 +96,13 @@ export class RunReportComponent implements OnInit {
    * @param {ReportsService} reportsService ReportsService
    * @param {SettingsService} settingsService Settings Service
    * @param {Dates} dateUtils Date Utils
+   * @param {AccountingService} accountingService Accounting Service
    */
   constructor(private route: ActivatedRoute,
               private reportsService: ReportsService,
               private settingsService: SettingsService,
               private alertService: AlertService,
+              private accountingService: AccountingService,
               private dateUtils: Dates) {
     this.report.name = this.route.snapshot.params['name'];
     this.route.queryParams.subscribe((queryParams: { type: any, id: any }) => {
@@ -107,7 +135,224 @@ export class RunReportComponent implements OnInit {
    */
   ngOnInit() {
     this.maxDate = this.settingsService.maxAllowedDate;
+    // Fetch GL accounts if needed
+    this.fetchGLAccounts();
+    // Fetch app users if needed
+    this.fetchAppUsers();
     this.createRunReportForm();
+    
+    // Set up filters
+    this.setupFilters();
+  }
+  
+  /**
+   * Set up all search filters
+   */
+  setupFilters() {
+    // Setup GL account filter
+    if (this.glAccountData.length > 0) {
+      this.setupGLAccountFilter();
+    }
+    
+    // Setup app user filter
+    if (this.appUserData.length > 0) {
+      this.setupAppUserFilter();
+    }
+    
+    // Setup filters for standard select parameters
+    this.paramData.forEach(param => {
+      if (param.displayType === 'select' && !this.isGLAccountParameter(param) && param.selectOptions && param.selectOptions.length > 0) {
+        this.setupParameterFilter(param);
+      }
+    });
+  }
+  
+  /**
+   * Set up filter for a specific parameter
+   * @param param The parameter to set up filter for
+   */
+  setupParameterFilter(param: ReportParameter) {
+    const paramName = param.name;
+    
+    // Create filter control if not exists
+    if (!this.paramFilterCtrls[paramName]) {
+      this.paramFilterCtrls[paramName] = new UntypedFormControl('');
+      this.filteredOptions[paramName] = new ReplaySubject<any[]>(1);
+      
+      // Initialize filtered options
+      this.filteredOptions[paramName].next(param.selectOptions.slice());
+      
+      // Listen for search field value changes
+      this.paramFilterCtrls[paramName].valueChanges
+        .pipe(takeUntil(this._onDestroy))
+        .subscribe(() => {
+          this.filterSelectOptions(param);
+        });
+    }
+  }
+  
+  /**
+   * Filter options for a parameter
+   * @param param The parameter to filter options for
+   */
+  filterSelectOptions(param: ReportParameter) {
+    const paramName = param.name;
+    
+    if (!param.selectOptions || param.selectOptions.length === 0) {
+      return;
+    }
+    
+    // Get search keyword
+    let search = this.paramFilterCtrls[paramName].value;
+    if (!search) {
+      this.filteredOptions[paramName].next(param.selectOptions.slice());
+      return;
+    } else {
+      search = search.toLowerCase();
+    }
+    
+    // Filter options
+    this.filteredOptions[paramName].next(
+      param.selectOptions.filter(option => 
+        option.name.toLowerCase().indexOf(search) > -1
+      )
+    );
+  }
+  
+  /**
+   * Set up filter for GL account selector
+   */
+  setupGLAccountFilter() {
+    // Set initial filtered GL accounts
+    this.filteredGLAccounts.next(this.glAccountData.slice());
+    
+    // Listen for search field value changes
+    this.glAccountFilterCtrl.valueChanges
+      .pipe(
+        takeUntil(this._onDestroy),
+        // Add debounce to avoid excessive filtering
+        debounceTime(150)
+      )
+      .subscribe(() => {
+        this.filterGLAccounts();
+      });
+  }
+  
+  /**
+   * Handles GL account select dropdown opening/closing
+   * @param isOpen Whether the dropdown is open
+   */
+  onGLSelectOpened(isOpen: boolean): void {
+    console.log('GL select opened:', isOpen);
+    if (isOpen) {
+      // Reset filter when opening
+      this.glAccountFilterCtrl.setValue('');
+      this.filterGLAccounts();
+      
+      // Focus the search input
+      setTimeout(() => {
+        const searchInput = document.querySelector('ngx-mat-select-search input');
+        if (searchInput) {
+          (searchInput as HTMLElement).focus();
+        }
+      }, 0);
+    }
+  }
+  
+  /**
+   * Handle direct keyup events on the GL filter
+   * @param event Keyboard event
+   */
+  onGLFilterKeyUp(event: KeyboardEvent): void {
+    console.log('GL filter keyup:', this.glAccountFilterCtrl.value);
+    this.filterGLAccounts();
+  }
+  
+  /**
+   * Filter GL accounts based on search term
+   */
+  filterGLAccounts() {
+    if (!this.glAccountData) {
+      return;
+    }
+    
+    // Get search keyword
+    let search = this.glAccountFilterCtrl.value;
+    console.log('Filtering GL accounts with:', search);
+    
+    if (!search) {
+      this.filteredGLAccounts.next(this.glAccountData.slice());
+      return;
+    } else {
+      search = search.toLowerCase();
+    }
+    
+    // Filter GL accounts with more comprehensive matching
+    const filtered = this.glAccountData.filter(glAccount => {
+      if (!glAccount) return false;
+      
+      const nameMatch = glAccount.name && glAccount.name.toLowerCase().includes(search);
+      const codeMatch = glAccount.glCode && glAccount.glCode.toLowerCase().includes(search);
+      const combinedMatch = `${glAccount.glCode || ''} ${glAccount.name || ''}`.toLowerCase().includes(search);
+      
+      return nameMatch || codeMatch || combinedMatch;
+    });
+    
+    console.log(`Found ${filtered.length} matching GL accounts`);
+    this.filteredGLAccounts.next(filtered);
+  }
+
+  /**
+   * Fetch GL accounts for selector
+   */
+  fetchGLAccounts() {
+    // Check if any parameter name contains GL Account
+    const hasGLAccountParam = this.paramData.some(param => 
+      param.label.toLowerCase().includes('gl account') || 
+      param.name.toLowerCase().includes('glaccount') ||
+      param.name.toLowerCase().includes('glaccountid'));
+
+    if (hasGLAccountParam) {
+      this.accountingService.getGlAccounts().subscribe((glAccounts: GLAccount[]) => {
+        this.glAccountData = glAccounts;
+        // Initialize filtered GL accounts
+        this.filteredGLAccounts.next(this.glAccountData.slice());
+      });
+    }
+  }
+
+  /**
+   * Checks if parameter is a GL account parameter
+   * @param param Report parameter
+   * @returns true if parameter is for GL account
+   */
+  isGLAccountParameter(param: ReportParameter): boolean {
+    return param.label.toLowerCase().includes('gl account') || 
+           param.name.toLowerCase().includes('glaccount') ||
+           param.name.toLowerCase().includes('glaccountid');
+  }
+  
+  /**
+   * Checks if parameter is an office parameter
+   * @param param Report parameter
+   * @returns true if parameter is for office
+   */
+  isOfficeParameter(param: ReportParameter): boolean {
+    return param.label.toLowerCase().includes('office') || 
+           param.name.toLowerCase().includes('office') || 
+           param.name.toLowerCase().includes('branch');
+  }
+  
+  /**
+   * Checks if parameter is an entry filter parameter
+   * @param param Report parameter
+   * @returns true if parameter is for entry filter
+   */
+  isEntryFilterParameter(param: ReportParameter): boolean {
+    return param.label.toLowerCase().includes('entry filter') || 
+           param.label.toLowerCase().includes('entry type') || 
+           param.name.toLowerCase().includes('entryfilter') || 
+           param.name.toLowerCase().includes('entrytype');
   }
 
   /**
@@ -119,7 +364,7 @@ export class RunReportComponent implements OnInit {
       (param: ReportParameter) => {
         if (!param.parentParameterName) { // Non Child Parameter
           this.reportForm.addControl(param.name, new UntypedFormControl('', Validators.required));
-          if (param.displayType === 'select') {
+          if (param.displayType === 'select' && !this.isGLAccountParameter(param)) {
             this.fetchSelectOptions(param, param.name);
           }
         } else { // Child Parameter
@@ -188,7 +433,7 @@ export class RunReportComponent implements OnInit {
           } else {
             this.reportForm.addControl(child.name, new UntypedFormControl('', Validators.required));
           }
-          if (child.displayType === 'select') {
+          if (child.displayType === 'select' && !this.isGLAccountParameter(child)) {
             const inputstring = `${child.name}?${param.inputName}=${option.id}`;
             this.fetchSelectOptions(child, inputstring);
           }
@@ -207,6 +452,11 @@ export class RunReportComponent implements OnInit {
       param.selectOptions = options;
       if (param.selectAll === 'Y') {
         param.selectOptions.push({id: '-1', name: 'All'});
+      }
+      
+      // Set up filter for this parameter if it's an office or entry filter
+      if (this.isOfficeParameter(param) || this.isEntryFilterParameter(param)) {
+        this.setupParameterFilter(param);
       }
     });
   }
@@ -230,13 +480,19 @@ export class RunReportComponent implements OnInit {
 
       const param: ReportParameter = this.paramData
         .find((_entry: any) => _entry.name === key);
+      
+      // Skip if this is an app user parameter with 'all' value
+      if (param && this.isAppUserParameter(param) && value === 'all') {
+        continue;
+      }
+
       newKey = this.isPentahoReport() ? param.pentahoName : param.inputName;
       switch (param.displayType) {
         case 'text':
           formattedResponse[newKey] = value;
           break;
         case 'select':
-          formattedResponse[newKey] = (value as any).id;
+          formattedResponse[newKey] = (value as any).id || value;
           break;
         case 'date':
           if (this.isTableReport()) {
@@ -378,5 +634,133 @@ export class RunReportComponent implements OnInit {
         );
       }
     }
+  }
+
+  /**
+   * Set up app user filter
+   */
+  setupAppUserFilter() {
+    // Initialize filtered app users
+    this.filteredAppUsers.next(this.appUserData.slice());
+    
+    // Listen for search field value changes
+    this.appUserFilterCtrl.valueChanges
+      .pipe(
+        takeUntil(this._onDestroy),
+        // Add debounce to avoid excessive filtering
+        debounceTime(150)
+      )
+      .subscribe(() => {
+        this.filterAppUsers();
+      });
+  }
+
+  /**
+   * Handles app user select dropdown opening/closing
+   * @param isOpen Whether the dropdown is open
+   */
+  onAppUserSelectOpened(isOpen: boolean): void {
+    console.log('App user select opened:', isOpen);
+    if (isOpen) {
+      // Reset filter when opening
+      this.appUserFilterCtrl.setValue('');
+      this.filterAppUsers();
+      
+      // Focus the search input
+      setTimeout(() => {
+        const searchInput = document.querySelector('ngx-mat-select-search input');
+        if (searchInput) {
+          (searchInput as HTMLElement).focus();
+        }
+      }, 0);
+    }
+  }
+  
+  /**
+   * Handle direct keyup events on the app user filter
+   * @param event Keyboard event
+   */
+  onAppUserFilterKeyUp(event: KeyboardEvent): void {
+    console.log('App user filter keyup:', this.appUserFilterCtrl.value);
+    this.filterAppUsers();
+  }
+  
+  /**
+   * Filter app users based on search input
+   */
+  filterAppUsers() {
+    // Get search keyword
+    let search = this.appUserFilterCtrl.value;
+    console.log('Filtering app users with:', search);
+    
+    if (!search) {
+      this.filteredAppUsers.next(this.appUserData.slice());
+      return;
+    } else {
+      search = search.toLowerCase();
+    }
+    
+    // Filter app users with more comprehensive matching
+    const filtered = this.appUserData.filter(appUser => {
+      if (!appUser) return false;
+      
+      const nameMatch = appUser.displayName && appUser.displayName.toLowerCase().includes(search);
+      const idMatch = appUser.id && appUser.id.toString().toLowerCase().includes(search);
+      
+      return nameMatch || idMatch;
+    });
+    
+    console.log(`Found ${filtered.length} matching app users`);
+    this.filteredAppUsers.next(filtered);
+  }
+
+  /**
+   * Fetch app users for selector
+   */
+  fetchAppUsers() {
+    // Check if any parameter name contains app user
+    const hasAppUserParam = this.paramData.some(param => 
+      param.label.toLowerCase().includes('app user') || 
+      param.name.toLowerCase().includes('appuser') ||
+      param.name.toLowerCase().includes('appuserid'));
+
+    if (hasAppUserParam) {
+      this.reportsService.getAppUsers().subscribe(
+        (response: any) => {
+          console.log('Staff Response:', response); // Debug log
+          if (Array.isArray(response)) {
+            this.appUserData = response.map((staff: any) => ({
+              id: staff.id,
+              displayName: `${staff.firstname} ${staff.lastname}`
+            }));
+            if (this.appUserData.length > 0) {
+              this.setupAppUserFilter();
+            }
+          } else {
+            console.error('Invalid staff response format:', response);
+          }
+        },
+        error => {
+          console.error('Error fetching staff:', error);
+        }
+      );
+    }
+  }
+
+  /**
+   * Check if parameter is app user parameter
+   */
+  isAppUserParameter(param: ReportParameter): boolean {
+    return param.label.toLowerCase().includes('app user') || 
+           param.name.toLowerCase().includes('appuser') ||
+           param.name.toLowerCase().includes('appuserid');
+  }
+
+  /**
+   * Implements OnDestroy interface
+   */
+  ngOnDestroy() {
+    this._onDestroy.next();
+    this._onDestroy.complete();
   }
 }

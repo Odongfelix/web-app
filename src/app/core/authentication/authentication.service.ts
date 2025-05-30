@@ -1,6 +1,7 @@
 /** Angular Imports */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 /** rxjs Imports */
 import { Observable, of } from 'rxjs';
@@ -8,6 +9,7 @@ import { map } from 'rxjs/operators';
 
 /** Custom Services */
 import { AlertService } from '../alert/alert.service';
+import { RouteStorageService } from '../route-storage/route-storage.service';
 
 /** Custom Interceptors */
 import { AuthenticationInterceptor } from './authentication.interceptor';
@@ -55,10 +57,14 @@ export class AuthenticationService {
    * @param {HttpClient} http Http Client to send requests.
    * @param {AlertService} alertService Alert Service.
    * @param {AuthenticationInterceptor} authenticationInterceptor Authentication Interceptor.
+   * @param {Router} router Router for navigation.
+   * @param {RouteStorageService} routeStorageService Route Storage Service.
    */
   constructor(private http: HttpClient,
               private alertService: AlertService,
-              private authenticationInterceptor: AuthenticationInterceptor) {
+              private authenticationInterceptor: AuthenticationInterceptor,
+              private router: Router,
+              private routeStorageService: RouteStorageService) {
     this.userLoggedIn = false;
     this.rememberMe = false;
     this.storage = sessionStorage;
@@ -202,6 +208,15 @@ export class AuthenticationService {
         this.setCredentials(credentials);
         this.alertService.alert({ type: 'Authentication Success', message: `${credentials.username} successfully logged in!` });
         delete this.credentials;
+        
+        // Redirect to the last route if available
+        const lastRoute = this.routeStorageService.getLastRoute();
+        if (lastRoute && lastRoute !== '/') {
+          this.router.navigate([lastRoute], { replaceUrl: true });
+          this.routeStorageService.clearLastRoute();
+        } else {
+          this.router.navigate(['/'], { replaceUrl: true });
+        }
       }
     }
   }
@@ -227,6 +242,9 @@ export class AuthenticationService {
    * @returns {Observable<boolean>} True if the user was logged out successfully.
    */
   logout(): Observable<boolean> {
+    // Store the current route before logging out
+    this.routeStorageService.storeCurrentRoute();
+    
     const twoFactorToken = JSON.parse(this.storage.getItem(this.twoFactorAuthenticationTokenStorageKey));
     if (twoFactorToken) {
       this.http.post('/twofactor/invalidate', { token: twoFactorToken.token }).subscribe();
@@ -240,6 +258,8 @@ export class AuthenticationService {
     this.setCredentials();
     this.resetDialog();
     this.userLoggedIn = false;
+    // Clear the stored route when logging out
+    this.routeStorageService.clearLastRoute();
     return of(true);
   }
 

@@ -142,4 +142,12 @@ export class ReportsService {
     return this.http.get(`/runreports/${reportName}`, {responseType: 'arraybuffer', observe: 'response', params: httpParams});
   }
 
+  /**
+   * @returns {Observable<any>} App Users data
+   */
+  getAppUsers(): Observable<any> {
+    const httpParams = new HttpParams().set('status', 'all');
+    return this.http.get('/staff', { params: httpParams });
+  }
+
 }

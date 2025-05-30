@@ -3,16 +3,11 @@
 }
 
 .select-search {
-  padding: 8px 16px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background-color: white;
+  padding: 8px;
 }
 
 .search-field {
   width: 100%;
-  margin-bottom: -1.25em;
 }
 
 /* Remove underline from search input */
@@ -28,4 +23,8 @@
 
 ::ng-deep .mat-select-panel {
   max-height: 350px !important;
+}
+
+::ng-deep .mat-form-field-infix {
+  width: auto !important;
 }

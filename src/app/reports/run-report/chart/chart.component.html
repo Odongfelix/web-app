@@ -1,4 +1,9 @@
-<div class="m-b-20" fxLayoutAlign="end">
+<div class="m-b-20" fxLayout="row" fxLayoutAlign="space-between center">
+  <button mat-raised-button color="primary" (click)="exportToExcel()" [disabled]="hideOutput">
+    <fa-icon icon="file-excel" class="m-r-10"></fa-icon>
+    {{ 'labels.buttons.Export to Excel' | translate }}
+  </button>
+  
   <mat-button-toggle-group aria-label="Select Chart Type">
     <mat-button-toggle value="Bar" (click)="setBarChart(inputData)">{{
       'labels.buttons.Bar Chart' | translate

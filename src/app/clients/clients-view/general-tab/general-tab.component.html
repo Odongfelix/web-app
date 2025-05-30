@@ -268,7 +268,7 @@
 
     <ng-container matColumnDef="Amount Paid">
       <th mat-header-cell class="r-amount" *matHeaderCellDef>{{ 'labels.inputs.Amount Paid' | translate }}</th>
-      <td mat-cell class="r-amount" *matCellDef="let element">{{ element.accountBalance | formatNumber }}</td>
+      <td mat-cell class="r-amount" *matCellDef="let element">{{ element.amountPaid | formatNumber }}</td>
     </ng-container>
 
     <ng-container matColumnDef="Type">
