@@ -164,14 +164,14 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
    */
   ngOnInit() {
     this.maxDate = this.settingsService.businessDate;
-    
+
     // Initialize the data source first
     this.dataSource = new JournalEntriesDataSource(this.accountingService);
-    
+
     // Set up autocomplete
     this.setFilteredOffices();
     this.setFilteredGlAccounts();
-    
+
     // Restore filters (this will trigger data loading)
     this.restoreFilters();
 
@@ -181,7 +181,7 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
         console.log('Currencies from backend:', response);
         this.currencyData = response.selectedCurrencyOptions || [];
         console.log('Formatted currency data:', this.currencyData);
-        
+
         // After loading currencies, restore the currency filter if it exists
         const savedFilters = this.getSavedFilters();
         if (savedFilters?.currency) {
@@ -321,6 +321,7 @@ export class SearchJournalEntryComponent implements OnInit, AfterViewInit {
     if (!this.sort.direction) {
       delete this.sort.active;
     }
+    console.log("load entries");
     this.dataSource.getJournalEntries(this.filterJournalEntriesBy, this.sort.active, this.sort.direction, this.paginator.pageIndex, this.paginator.pageSize);
   }
 
