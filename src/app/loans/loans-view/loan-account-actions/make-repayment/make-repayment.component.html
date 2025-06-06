@@ -64,6 +64,30 @@
           </mifosx-input-amount>
 
           <mat-form-field>
+            <mat-label>{{ 'Currency Type' | translate }}</mat-label>
+            <mat-select formControlName="currencyType">
+              <mat-option value="UGX">UGX</mat-option>
+              <mat-option value="USD">USD</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <ng-container *ngIf="repaymentLoanForm.get('currencyType').value === 'USD'">
+            <mifosx-input-amount 
+              [currency]="{code: 'USD', displaySymbol: '$'}"
+              [isRequired]="true"
+              [inputFormControl]="repaymentLoanForm.controls.usdAmount"
+              [inputLabel]="'USD Amount'"
+            >
+            </mifosx-input-amount>
+
+            <mat-form-field>
+              <mat-label>{{ 'Exchange Rate' | translate }}</mat-label>
+              <input matInput type="number" formControlName="exchangeRate" required>
+              <mat-hint>UGX per 1 USD</mat-hint>
+            </mat-form-field>
+          </ng-container>
+
+          <mat-form-field>
             <mat-label>{{ 'labels.inputs.External Id' | translate }}</mat-label>
             <input matInput formControlName="externalId" />
           </mat-form-field>

@@ -72,7 +72,23 @@ export class MakeRepaymentComponent implements OnInit {
       'transactionAmount': ['', Validators.required],
       'externalId': '',
       'paymentTypeId': '',
-      'note': ''
+      'note': '',
+      currencyType: ['UGX'],
+      usdAmount: [''],
+      exchangeRate: ['']
+    });
+
+    // Add validation logic to calculate UGX amount when USD and exchange rate are entered
+    this.repaymentLoanForm.get('usdAmount').valueChanges.subscribe(value => {
+      if (this.repaymentLoanForm.get('currencyType').value === 'USD') {
+        const exchangeRate = this.repaymentLoanForm.get('exchangeRate').value;
+        if (value && exchangeRate) {
+          const ugxAmount = value * exchangeRate;
+          this.repaymentLoanForm.patchValue({
+            transactionAmount: ugxAmount
+          }, {emitEvent: false});
+        }
+      }
     });
   }
 
