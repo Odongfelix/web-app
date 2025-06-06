@@ -132,23 +132,53 @@ export class MakeRepaymentComponent implements OnInit {
 
   /** Submits the repayment form */
   submit() {
-    const repaymentLoanFormData = this.repaymentLoanForm.value;
+    const formData = this.repaymentLoanForm.value;
     const locale = this.settingsService.language.code;
     const dateFormat = this.settingsService.dateFormat;
-    const prevTransactionDate: Date = this.repaymentLoanForm.value.transactionDate;
-    if (repaymentLoanFormData.transactionDate instanceof Date) {
-      repaymentLoanFormData.transactionDate = this.dateUtils.formatDate(prevTransactionDate, dateFormat);
-    }
+
+    // Destructure the form data, excluding currency-related fields
+    const {
+      currencyType,
+      usdAmount,
+      exchangeRate,
+      transactionDate,
+      transactionAmount,
+      paymentTypeId,
+      note,
+      accountNumber,
+      checkNumber,
+      routingCode,
+      receiptNumber,
+      bankNumber,
+      externalId,
+      ...rest
+    } = formData;
+
     const data = {
-      ...repaymentLoanFormData,
+      transactionDate: this.dateUtils.formatDate(transactionDate, dateFormat),
+      transactionAmount,
+      paymentTypeId,
+      note,
+      accountNumber,
+      checkNumber,
+      routingCode,
+      receiptNumber,
+      bankNumber,
+      externalId,
       dateFormat,
       locale
     };
-    const command = this.dataObject.type.code.split('.')[1];
-    data['transactionAmount'] = data['transactionAmount'] * 1;
-    this.loanService.submitLoanActionButton(this.loanId, data, command)
+
+    // Remove null or undefined values
+    Object.keys(data).forEach(key => {
+      if (data[key] === null || data[key] === undefined || data[key] === '') {
+        delete data[key];
+      }
+    });
+
+    this.loanService.submitLoanActionButton(this.loanId, data, 'repayment')
       .subscribe((response: any) => {
-        this.router.navigate(['../../transactions'], { relativeTo: this.route });
+        this.router.navigate(['../../general'], { relativeTo: this.route });
     });
   }
 
