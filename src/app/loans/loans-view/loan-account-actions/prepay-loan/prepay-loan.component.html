@@ -55,13 +55,40 @@
             </div>
           </div>
 
+          <!-- First show the UGX amount -->
           <mifosx-input-amount
             [currency]="currency"
             [isRequired]="true"
             [inputFormControl]="prepayLoanForm.controls.transactionAmount"
-            [inputLabel]="'Transaction Amount'"
+            [inputLabel]="'UGX Amount'"
           >
           </mifosx-input-amount>
+
+          <!-- Then add the currency selector -->
+          <mat-form-field>
+            <mat-label>{{ 'Currency Type' | translate }}</mat-label>
+            <mat-select formControlName="currencyType">
+              <mat-option value="UGX">UGX</mat-option>
+              <mat-option value="USD">USD</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Finally show USD fields when USD is selected -->
+          <ng-container *ngIf="prepayLoanForm.get('currencyType').value === 'USD'">
+            <mifosx-input-amount 
+              [currency]="{code: 'USD', displaySymbol: '$'}"
+              [isRequired]="true"
+              [inputFormControl]="prepayLoanForm.controls.usdAmount"
+              [inputLabel]="'USD Amount'"
+            >
+            </mifosx-input-amount>
+
+            <mat-form-field>
+              <mat-label>{{ 'Exchange Rate' | translate }}</mat-label>
+              <input matInput type="number" formControlName="exchangeRate" required>
+              <mat-hint>UGX per 1 USD</mat-hint>
+            </mat-form-field>
+          </ng-container>
 
           <mat-form-field>
             <mat-label>{{ 'labels.inputs.External Id' | translate }}</mat-label>

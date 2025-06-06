@@ -63,7 +63,7 @@ export class PrepayLoanComponent implements OnInit {
    */
   ngOnInit() {
     this.maxDate = this.settingsService.businessDate;
-    this.createprepayLoanForm();
+    this.createPrepayLoanForm();
     this.setPrepayLoanDetails();
     this.prepayData = this.dataObject;
     if (this.dataObject.currency) {
@@ -74,13 +74,52 @@ export class PrepayLoanComponent implements OnInit {
   /**
    * Creates the prepay loan form.
    */
-  createprepayLoanForm() {
+  createPrepayLoanForm() {
     this.prepayLoanForm = this.formBuilder.group({
-      'transactionDate': [new Date(), Validators.required],
+      'transactionDate': [this.settingsService.businessDate, Validators.required],
       'transactionAmount': ['', Validators.required],
-      'externalId': [''],
-      'paymentTypeId': [''],
-      'note': ['']
+      'externalId': '',
+      'paymentTypeId': '',
+      'note': '',
+      'currencyType': ['UGX'],
+      'usdAmount': [''],
+      'exchangeRate': [''],
+    });
+
+    // Add validation logic to calculate UGX amount when USD and exchange rate are entered
+    this.prepayLoanForm.get('usdAmount').valueChanges.subscribe(value => {
+      if (this.prepayLoanForm.get('currencyType').value === 'USD') {
+        const exchangeRate = this.prepayLoanForm.get('exchangeRate').value;
+        if (value && exchangeRate) {
+          const ugxAmount = value * exchangeRate;
+          this.prepayLoanForm.patchValue({
+            transactionAmount: ugxAmount
+          }, {emitEvent: false});
+        }
+      }
+    });
+
+    // Add exchange rate value changes subscription
+    this.prepayLoanForm.get('exchangeRate').valueChanges.subscribe(value => {
+      if (this.prepayLoanForm.get('currencyType').value === 'USD') {
+        const usdAmount = this.prepayLoanForm.get('usdAmount').value;
+        if (usdAmount && value) {
+          const ugxAmount = usdAmount * value;
+          this.prepayLoanForm.patchValue({
+            transactionAmount: ugxAmount
+          }, {emitEvent: false});
+        }
+      }
+    });
+
+    // Reset USD fields when currency type changes
+    this.prepayLoanForm.get('currencyType').valueChanges.subscribe(value => {
+      if (value === 'UGX') {
+        this.prepayLoanForm.patchValue({
+          usdAmount: '',
+          exchangeRate: ''
+        });
+      }
     });
   }
 
@@ -132,20 +171,30 @@ export class PrepayLoanComponent implements OnInit {
     const prepayLoanFormData = this.prepayLoanForm.value;
     const locale = this.settingsService.language.code;
     const dateFormat = this.settingsService.dateFormat;
-    const prevTransactionDate: Date = this.prepayLoanForm.value.transactionDate;
+    
     if (prepayLoanFormData.transactionDate instanceof Date) {
-      prepayLoanFormData.transactionDate = this.dateUtils.formatDate(prevTransactionDate, dateFormat);
+      prepayLoanFormData.transactionDate = this.dateUtils.formatDate(prepayLoanFormData.transactionDate, dateFormat);
     }
+    
     const data = {
       ...prepayLoanFormData,
       dateFormat,
       locale
     };
-    data['transactionAmount'] = data['transactionAmount'] * 1;
-    this.loanService.submitLoanActionButton(this.loanId, data, 'repayment')
+    
+    // Ensure transaction amount is treated as a number
+    data.transactionAmount = Number(data.transactionAmount);
+    
+    // Remove USD-related fields from final submission if not needed
+    if (data.currencyType === 'UGX') {
+      delete data.usdAmount;
+      delete data.exchangeRate;
+    }
+    
+    this.loanService.submitLoanActionButton(this.loanId, data, 'prepayLoan')
       .subscribe((response: any) => {
         this.router.navigate(['../../general'], { relativeTo: this.route });
-    });
+      });
   }
 
 }
