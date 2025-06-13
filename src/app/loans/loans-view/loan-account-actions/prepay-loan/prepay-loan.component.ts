@@ -171,27 +171,27 @@ export class PrepayLoanComponent implements OnInit {
     const prepayLoanFormData = this.prepayLoanForm.value;
     const locale = this.settingsService.language.code;
     const dateFormat = this.settingsService.dateFormat;
-    
+
     if (prepayLoanFormData.transactionDate instanceof Date) {
       prepayLoanFormData.transactionDate = this.dateUtils.formatDate(prepayLoanFormData.transactionDate, dateFormat);
     }
-    
+
     const data = {
       ...prepayLoanFormData,
       dateFormat,
       locale
     };
-    
+
     // Ensure transaction amount is treated as a number
     data.transactionAmount = Number(data.transactionAmount);
-    
+
     // Remove USD-related fields from final submission if not needed
     if (data.currencyType === 'UGX') {
       delete data.usdAmount;
       delete data.exchangeRate;
     }
-    
-    this.loanService.submitLoanActionButton(this.loanId, data, 'prepayLoan')
+
+    this.loanService.submitLoanActionButton(this.loanId, data, 'repayment')
       .subscribe((response: any) => {
         this.router.navigate(['../../general'], { relativeTo: this.route });
       });

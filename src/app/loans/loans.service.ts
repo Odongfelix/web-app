@@ -206,7 +206,7 @@ export class LoansService {
    * @param data Data
    * @param command Command
    */
-  submitLoanActionButton(loanId: string, data: any, command: any) {
+  submitLoanActionButton(loanId: string, data: any, command: string): Observable<any> {
     const httpParams = new HttpParams().set('command', command);
     return this.http.post(`/loans/${loanId}/transactions`, data, { params: httpParams });
   }
