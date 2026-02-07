@@ -25,7 +25,7 @@ export class ManageSavingsAccountComponent implements OnInit {
   savingAccountId: string;
   transactionCommand: string;
 
-  reasonOptions: any = [];
+  reasonOptions: any = [{id:1,name:"Default reason"}];
 
   transactionType: {
     holdamount: boolean,
